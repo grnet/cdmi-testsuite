@@ -21,8 +21,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
-  <groupId>gr.grnet</groupId>
-  <artifactId>cdmi-client</artifactId>
+  <groupId>gr.grnet.cdmi</groupId>
+  <artifactId>cdmi-testsuite</artifactId>
   <version>0.2.0</version>
 
   <!-- Project details-->
@@ -30,7 +30,7 @@
   <description>
     CDMI v1.0.2 test suite
   </description>
-  <url>https://github.com/grnet/cdmi-client</url>
+  <url>https://github.com/grnet/cdmi-testsuite</url>
   <inceptionYear>2014</inceptionYear>
   <organization>
     <name>GRNET</name>
