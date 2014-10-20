@@ -19,15 +19,17 @@ package gr.grnet.cdmi.client
 
 import java.io.File
 
+import com.beust.jcommander.ParameterException
 import com.squareup.okhttp.OkHttpClient
 import com.typesafe.config._
+import gr.grnet.cdmi.client.cmdline.Args
+import gr.grnet.cdmi.client.cmdline.Args.ParsedCmdLine
 import gr.grnet.cdmi.client.testmodel._
 
 import scala.collection.JavaConverters._
 
 /**
  *
- * @author Christos KK Loverdos <loverdos@gmail.com>
  */
 object Main {
   type HeaderKeyValue = (String, String)
@@ -67,72 +69,57 @@ object Main {
     }
   }
 
-  def main(args: Array[String]): Unit = {
-    val config0 =
-      args match {
-        case Array() ⇒
-          // No argument, mean we load from
-          ConfigFactory.load(
-            Thread.currentThread().getContextClassLoader,
-            ConfigResolveOptions.noSystem()
-          )
+  def main(options: Args.GlobalOptions): Unit = {
+    val conf = options.conf
+    val profile = options.profile
+    val xconf = options.xconf
+    println("conf = " + conf)
+    println("profile = " + profile)
+    println("xconf = " + xconf)
 
-          ConfigFactory.load(
-            ConfigFactory.empty(),
-            ConfigResolveOptions.noSystem()
-          )
+    val configF = () ⇒
+      conf match {
+        case "default" ⇒
+          ConfigFactory.parseResources("reference.conf").resolve()
 
-          ConfigFactory.parseResources("reference.conf")
-
-        case Array(path) ⇒
+        case path ⇒
           ConfigFactory.parseFile(new File(path).getAbsoluteFile)
-
-        case _ ⇒
-          System.err.println(s"Usage: Main [CONF_FILE_PATH]")
-          sys.exit(1)
       }
 
-    val envHttpHeaders = readHeadersFromEnv()
-    def overrideConfigHeaders(config: Config, headers: List[HeaderKeyValue]): Config =
-      headers match {
-        case Nil ⇒
-          config
+    val config = configF()
 
-        case (key, value) :: tailHeaders ⇒
-          val keyPath = s"global.http-headers.$key"
-          val newConfig = config.withValue(keyPath, ConfigValueFactory.fromAnyRef(value))
-          overrideConfigHeaders(newConfig, tailHeaders)
-      }
+    val profileConfigF = () ⇒ configF().getConfig(s"${ConfKey.profiles}.$profile")
+    val profileHttpHeadersF = () ⇒ profileConfigF().getStringList(ConfKey.`http-headers`)
 
-    val config       = overrideConfigHeaders(config0, envHttpHeaders).resolve()
-
-    val globalF      = () ⇒ config.getConfig("global")
-    val rootUriF     = () ⇒ globalF().getString("CDMI_ROOT_URI")
-    val httpHeadersF = () ⇒ globalF().getConfig("http-headers")
-    val specVersionF = () ⇒ httpHeadersF().getString("X-CDMI-Specification-Version")
-    val classTestsF  = () ⇒ config.getConfig("class-tests")
-    val shellTestsF  = () ⇒ config.getConfig("shell-tests")
+    val globalF      = () ⇒ configF().getConfig(ConfKey.global)
+    val rootUriF     = () ⇒ globalF().getString(ConfKey.CDMI_ROOT_URI)
+    val httpHeadersF = () ⇒ globalF().getConfig(ConfKey.`http-headers`)
+    val specVersionF = () ⇒ httpHeadersF().getString(ConfKey.`X-CDMI-Specification-Version`)
+    val classTestsF  = () ⇒ configF().getConfig(ConfKey.`class-tests`)
+    val shellTestsF  = () ⇒ configF().getConfig(ConfKey.`shell-tests`)
 
     val ok = new OkHttpClient
     val clientFactory = () ⇒ new HttpClient(rootUriF(), ok, httpHeadersF())
 
     val fqClassNamesF = () ⇒ classTestsF().root().keySet().asScala.toList
 
-    // eating our own dog food
+    // Validate configuration I
     object ConfigurationCheck extends TestCaseSkeleton {
       def steps = List(
-        TestStep.effect("`global` exists in configuration"              )(globalF()),
-        TestStep.effect("`global.CDMI_ROOT_URI` exists in configuration")(rootUriF()),
-        TestStep.effect("`global.http-headers` exists in configuration" )(httpHeadersF()),
-        TestStep.effect("`global.http-headers.X-CDMI-Specification-Version` exists in configuration")(specVersionF()),
-        TestStep.effect("`class-tests` exists in configuration")(classTestsF()),
-        TestStep.effect("`shell-tests` exists in configuration")(shellTestsF())
+        TestStep.effect(s"Provided profile $profile exists"              )(profileConfigF()),
+        TestStep.effect(s"${ConfKey.`http-headers`} in the provided profile $profile exist")(httpHeadersF()),
+        TestStep.effect( "`global` exists in configuration"              )(globalF()),
+        TestStep.effect( "`global.CDMI_ROOT_URI` exists in configuration")(rootUriF()),
+        TestStep.effect( "`global.http-headers` exists in configuration" )(httpHeadersF()),
+        TestStep.effect( "`global.http-headers.X-CDMI-Specification-Version` exists in configuration")(specVersionF()),
+        TestStep.effect( "`class-tests` exists in configuration")(classTestsF()),
+        TestStep.effect( "`shell-tests` exists in configuration")(shellTestsF())
       )
     }
 
-    // also eating our own dog food
+    // Validate configuration II
     object ClassTestsCheck extends TestCaseSkeleton {
-      override def description = "Check availability of classes from `class-tests`"
+      override def description = s"Check availability of classes from `${ConfKey.`class-tests`}`"
       val stepsF = () ⇒
         for {
           fqClassName ← fqClassNamesF()
@@ -160,7 +147,11 @@ object Main {
           } yield {
 
             val id = (new StringBuilder).append('"').append(fqClassName).append('"').toString()
+
+            // The configuration, using-c in the command line
             val localConfig = classTests.getConfig(id)
+            // Overridden configuration, using -x from the command line
+//            val overridenLocalConfig = localConfig.withValue(ConfKey.`http-headers`, profileConfigF().v)
 
             (theTest, localConfig)
           }
@@ -169,5 +160,40 @@ object Main {
 
       case _ ⇒
     }
+  }
+
+  def main(args: Array[String]): Unit = {
+    val jc = Args.jc
+    try {
+      jc.parse(args: _*)
+
+      val options = ParsedCmdLine.globalOptions
+      main(options)
+    }
+    catch {
+      case e: ParameterException ⇒
+        System.err.println(e.getMessage)
+        sys.exit(1)
+
+      case e: Exception ⇒
+        e.printStackTrace(System.err)
+        sys.exit(2)
+
+      case e: Throwable ⇒
+        e.printStackTrace(System.err)
+        sys.exit(3)
+    }
+
+    val envHttpHeaders = readHeadersFromEnv()
+    def overrideConfigHeaders(config: Config, headers: List[HeaderKeyValue]): Config =
+      headers match {
+        case Nil ⇒
+          config
+
+        case (key, value) :: tailHeaders ⇒
+          val keyPath = s"global.http-headers.$key"
+          val newConfig = config.withValue(keyPath, ConfigValueFactory.fromAnyRef(value))
+          overrideConfigHeaders(newConfig, tailHeaders)
+      }
   }
 }
