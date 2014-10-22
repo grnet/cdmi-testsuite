@@ -80,14 +80,14 @@ trait TestCaseSkeleton extends TestCase {
   }
 
   def getJsonBody(config: TestConfig): Config = {
-    val TestConfig(global, local) = config
+    val TestConfig(_, local) = config
     val path = "json-body"
     val jsonBody = local.getConfig(path)
     jsonBody
   }
 
   def getXAuthToken(config: TestConfig): String = {
-    val TestConfig(global, local) = config
+    val TestConfig(global, _) = config
     val xAuthToken = global.getString("http-headers.X-Auth-Token")
     assert(!xAuthToken.isEmpty, "!xAuthToken.isEmpty")
     xAuthToken

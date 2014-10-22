@@ -17,11 +17,15 @@
 
 package gr.grnet.cdmi.client.testmodel
 
-import com.typesafe.config.Config
+import com.typesafe.config.{ConfigFactory, Config}
 
 /**
  *
  */
 case class TestConfig(global: Config, local: Config) {
   def render = (global.root().render(), local.root().render())
+}
+
+object TestConfig {
+  val Empty = TestConfig(ConfigFactory.empty(), ConfigFactory.empty())
 }

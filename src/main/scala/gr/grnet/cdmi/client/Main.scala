@@ -86,6 +86,16 @@ object Main {
           ConfigFactory.parseFile(new File(path).getAbsoluteFile)
       }
 
+    object MasterConfCheck extends TestCaseSkeleton {
+      def steps = List(TestStep.effect("Check provided configuration")(configF()))
+    }
+    MasterConfCheck.apply(TestConfig.Empty, () ⇒ null) match {
+      case TestCaseNotPassed(_, _) ⇒
+        sys.exit(2)
+
+      case _ ⇒
+    }
+
     val config = configF()
 
     val profileConfigF = () ⇒ configF().getConfig(s"${ConfKey.profiles}.$profile")
@@ -131,7 +141,13 @@ object Main {
     }
 
     val testConfig = TestConfig(config, ConfigFactory.empty())
-    ConfigurationCheck.apply(testConfig, clientFactory)
+    ConfigurationCheck.apply(testConfig, clientFactory)  match {
+      case TestCaseNotPassed(_, _) ⇒
+        sys.exit(3)
+
+      case _ ⇒
+    }
+
     ClassTestsCheck   .apply(testConfig, clientFactory) match {
       case TestCasePassed ⇒
         // continue ONLY if all test classes can be instantiated
@@ -159,6 +175,7 @@ object Main {
         runTestCases(globalConfig, testCases, clientFactory)
 
       case _ ⇒
+        sys.exit(4)
     }
   }
 
