@@ -32,6 +32,8 @@ class DataObjects extends TestCaseSkeleton {
 
   val step01Name = s"PUT CDMI '${HttpClient.Content_Type}: ${HttpClient.Application_Cdmi_Object}'"
   val step01 = TestStep(step01Name) { (config, client) ⇒
+    println("config = " + config.local.root().render())
+
     val objectPath = getObjectPathPrefix(config) + randomFolder + randomSuffix01
     val jsonBody   = getJsonBody(config)
     val json       = jsonBody.root().render(ConfigRenderOptions.concise().setFormatted(true))

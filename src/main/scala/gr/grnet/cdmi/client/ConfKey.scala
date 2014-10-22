@@ -25,6 +25,7 @@ object ConfKey {
   val CDMI_ROOT_URI = "CDMI_ROOT_URI"
   val profiles = "profiles"
   val `http-headers` = "http-headers"
+  val `http-headers-list` = "http-headers-list"
   val `X-CDMI-Specification-Version` = "X-CDMI-Specification-Version"
   val `class-tests` = "class-tests"
   val `shell-tests` = "shell-tests"

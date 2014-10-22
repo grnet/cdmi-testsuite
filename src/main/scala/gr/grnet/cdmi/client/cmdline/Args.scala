@@ -57,7 +57,6 @@ object Args {
       description = "Extra, overriding configuration that applies to the chosen profile. " +
                     "You can provide the configuration inline or by giving a file path. " +
                     "For the latter case, prepend an at sign '@'",
-      required = true,
       validateWith = classOf[NotEmptyStringValidator]
     )
     val xconf: String = null
