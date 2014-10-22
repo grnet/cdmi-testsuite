@@ -77,16 +77,18 @@ object Main {
     println("profile = " + profile)
     println("xconf = " + xconf)
 
+    // Parse and validate -c
     val configF = () ⇒
       conf match {
         case "default" ⇒
           ConfigFactory.parseResources("reference.conf").resolve()
 
         case path ⇒
-          ConfigFactory.parseFile(new File(path).getAbsoluteFile)
+          ConfigFactory.parseFile(new File(path).getAbsoluteFile).resolve()
       }
 
     object MasterConfCheck extends TestCaseSkeleton {
+      override def description: String = s"Master configuration exists [$profile]"
       def steps = List(TestStep.effect("Check provided configuration")(configF()))
     }
     MasterConfCheck.apply(TestConfig.Empty, () ⇒ null) match {
