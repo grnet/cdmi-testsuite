@@ -168,7 +168,12 @@ object Main {
       jc.parse(args: _*)
 
       val options = ParsedCmdLine.globalOptions
-      main(options)
+      if(options.help) {
+        jc.usage()
+      }
+      else {
+        main(options)
+      }
     }
     catch {
       case e: ParameterException ⇒

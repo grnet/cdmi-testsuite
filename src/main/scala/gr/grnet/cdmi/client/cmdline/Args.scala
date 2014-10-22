@@ -31,6 +31,12 @@ object Args {
 
   class GlobalOptions {
     @Parameter(
+      names = Array("-h", "-help", "--help"),
+      help = true
+    )
+    val help = false
+
+    @Parameter(
       names = Array("-c"),
       description = "The configuration file the application uses. Use 'default' to load the builtin configuration",
       required = true,

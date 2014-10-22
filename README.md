@@ -1,3 +1,5 @@
+## Intro
+
 This is a CDMI test suite, currently targeting [GRNET's CDMI implementation](https://github.com/grnet/pithos-j) but which can be generalized:
 
 * To support any CDMI implementation
@@ -39,4 +41,25 @@ The test suite is meant to be configurable. See [reference.conf](https://github.
   OK [GET non-CDMI 'Accept: */*' returns exact 'Content-Type']
   OK [GET non-CDMI w/o 'Accept' returns exact 'Content-Type']
 -OK DataObjects [gr.grnet.cdmi.client.tests.DataObjects]
+```
+
+## Usage
+
+```
+$ java -jar cdmi-testsuite.jar -h
+
+Usage: gr.grnet.cdmi.client.Main [options]
+  Options:
+    -h, -help, --help
+
+       Default: false
+  * -c
+       The configuration file the application uses. Use 'default' to load the
+       builtin configuration
+       Default: default
+  * -p
+       Selects the profile
+       Default: default
+  * -x
+       Extra, overriding configuration that applies to the chosen profile
 ```
