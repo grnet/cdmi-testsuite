@@ -42,19 +42,21 @@ object Args {
       required = true,
       validateWith = classOf[NotEmptyStringValidator]
     )
-    val conf: String = "default"
+    val conf: String = null
 
     @Parameter(
       names = Array("-p"),
-      description = "Selects the profile",
+      description = "Selects the profile from the configuration",
       required = true,
       validateWith = classOf[NotEmptyStringValidator]
     )
-    val profile: String = "default"
+    val profile: String = null
 
     @Parameter(
       names = Array("-x"),
-      description = "Extra, overriding configuration that applies to the chosen profile",
+      description = "Extra, overriding configuration that applies to the chosen profile. " +
+                    "You can provide the configuration inline or by giving a file path. " +
+                    "For the latter case, prepend an at sign '@'",
       required = true,
       validateWith = classOf[NotEmptyStringValidator]
     )

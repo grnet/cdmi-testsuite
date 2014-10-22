@@ -100,6 +100,28 @@ object Main {
 
     val config = configF()
 
+    // Parse and validate -x
+    val xConfigF = () ⇒
+      if(xconf.startsWith("@")) {
+        ConfigFactory.parseFile(new File(xconf.substring(1)).getAbsoluteFile).resolve()
+      }
+      else {
+        ConfigFactory.parseString(xconf).resolve()
+      }
+
+    object XConfCheck extends TestCaseSkeleton {
+      override def description: String = s"Option -x"
+      def steps = List(TestStep.effect("Check parameter for -x")(xConfigF()))
+    }
+    XConfCheck.apply(TestConfig.Empty, () ⇒ null) match {
+      case TestCaseNotPassed(_, _) ⇒
+        sys.exit(3)
+
+      case _ ⇒
+    }
+
+    val xConfig = xConfigF()
+
     val profileConfigF = () ⇒ configF().getConfig(s"${ConfKey.profiles}.$profile")
     val profileHttpHeadersF = () ⇒ profileConfigF().getStringList(ConfKey.`http-headers`)
 
