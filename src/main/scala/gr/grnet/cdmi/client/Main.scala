@@ -33,27 +33,7 @@ import scala.collection.JavaConverters._
  */
 object Main {
   type HeaderKeyValue = (String, String)
-
-  def readHeadersFromEnv(): List[HeaderKeyValue] = {
-    def loop(id: Int, acc: List[HeaderKeyValue]): List[HeaderKeyValue] = {
-      System.getenv("CDMI_HEADER_" + id) match {
-        case null ⇒
-          acc
-
-        case h ⇒
-          val Array(key, value) = h.split(':')
-          loop(id + 1, (key.trim, value.trim) :: acc)
-      }
-    }
-
-    loop(0, Nil) match {
-      case Nil ⇒
-        loop(1, Nil)
-      case acc ⇒
-        acc
-    }
-  }
-
+  
   def runTestCases(
     globalConfig: Config,
     testCases: List[(TestCase, Config)],
@@ -255,17 +235,5 @@ object Main {
         e.printStackTrace(System.err)
         sys.exit(3)
     }
-
-    val envHttpHeaders = readHeadersFromEnv()
-    def overrideConfigHeaders(config: Config, headers: List[HeaderKeyValue]): Config =
-      headers match {
-        case Nil ⇒
-          config
-
-        case (key, value) :: tailHeaders ⇒
-          val keyPath = s"global.http-headers.$key"
-          val newConfig = config.withValue(keyPath, ConfigValueFactory.fromAnyRef(value))
-          overrideConfigHeaders(newConfig, tailHeaders)
-      }
   }
 }
