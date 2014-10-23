@@ -15,18 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package gr.grnet.cdmi.client
+package gr.grnet.cdmi.client.conf
 
 /**
  *
  */
 object ConfKey {
   val global = "global"
-  val CDMI_ROOT_URI = "CDMI_ROOT_URI"
   val profiles = "profiles"
+  val specific = "specific"
+
+  val `root-uri` = "root-uri"
   val `http-headers` = "http-headers"
-  val `http-headers-list` = "http-headers-list"
   val `X-CDMI-Specification-Version` = "X-CDMI-Specification-Version"
   val `class-tests` = "class-tests"
-  val `shell-tests` = "shell-tests"
+  val `class-tests-list` = "class-tests-list"
 }

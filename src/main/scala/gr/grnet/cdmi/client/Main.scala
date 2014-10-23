@@ -24,6 +24,7 @@ import com.squareup.okhttp.OkHttpClient
 import com.typesafe.config._
 import gr.grnet.cdmi.client.cmdline.Args
 import gr.grnet.cdmi.client.cmdline.Args.ParsedCmdLine
+import gr.grnet.cdmi.client.conf.ConfKey
 import gr.grnet.cdmi.client.testmodel._
 
 import scala.collection.JavaConverters._
@@ -33,7 +34,7 @@ import scala.collection.JavaConverters._
  */
 object Main {
   type HeaderKeyValue = (String, String)
-  
+
   def runTestCases(
     globalConfig: Config,
     testCases: List[(TestCase, Config)],
@@ -54,14 +55,21 @@ object Main {
     val profile = options.profile
     val xconf = options.xconf
 
+    val refConfig = ConfigFactory.parseResources("reference.conf").resolve()
+
     // Parse and validate -c
     val configF = () ⇒
       conf match {
         case "default" ⇒
-          ConfigFactory.parseResources("reference.conf").resolve()
+          refConfig
 
         case path ⇒
-          ConfigFactory.parseFile(new File(path).getAbsoluteFile).resolve()
+          val config = ConfigFactory.parseFile(new File(path).getAbsoluteFile).resolve()
+          config.checkValid(
+            refConfig,
+            "global", "profiles", "class-tests", "class-tests-list", "shell-tests"
+          )
+          config
       }
 
     object MasterConfCheck extends TestCaseSkeleton {
