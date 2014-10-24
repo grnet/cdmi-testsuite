@@ -17,7 +17,7 @@
 
 package gr.grnet.cdmi.client.tests
 
-import gr.grnet.cdmi.client.testmodel.{TestStep, TestCaseSkeleton}
+import gr.grnet.cdmi.client.business.{TestStep, TestCaseSkeleton}
 
 /**
  *

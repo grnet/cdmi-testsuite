@@ -15,17 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package gr.grnet.cdmi.client.testmodel
+package gr.grnet.cdmi.client.business
 
-import com.typesafe.config.{ConfigFactory, Config}
+import gr.grnet.cdmi.client.conf.ClassTestConf
 
-/**
- *
- */
-case class TestConfig(global: Config, local: Config) {
-  def render = (global.root().render(), local.root().render())
+case class TestStep(description: String)(f: (Client, ClassTestConf) ⇒ Unit) {
+  def apply(client: Client, conf: ClassTestConf): Unit = f(client, conf)
 }
 
-object TestConfig {
-  val Empty = TestConfig(ConfigFactory.empty(), ConfigFactory.empty())
+object TestStep {
+  def condition(description: String)(condition: ⇒Boolean): TestStep =
+    TestStep(description) { (_,_) ⇒ Predef.assert(condition, description) }
+
+  def effect(description: String)(justdoit: ⇒Unit): TestStep =
+    TestStep(description) { (_,_) ⇒ justdoit }
 }

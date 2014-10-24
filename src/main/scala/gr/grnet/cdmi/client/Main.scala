@@ -24,10 +24,10 @@ import com.squareup.okhttp.OkHttpClient
 import com.typesafe.config._
 import gr.grnet.cdmi.client.cmdline.Args
 import gr.grnet.cdmi.client.cmdline.Args.ParsedCmdLine
-import gr.grnet.cdmi.client.conf.ConfKey
-import gr.grnet.cdmi.client.testmodel._
+import gr.grnet.cdmi.client.conf.{ClassTestConf, ConfKey, ProfileConf, SuiteConf}
+import gr.grnet.cdmi.client.business._
 
-import scala.collection.JavaConverters._
+import scala.annotation.tailrec
 
 /**
  *
@@ -35,18 +35,54 @@ import scala.collection.JavaConverters._
 object Main {
   type HeaderKeyValue = (String, String)
 
-  def runTestCases(
-    globalConfig: Config,
-    testCases: List[(TestCase, Config)],
-    clientFactory: () ⇒ HttpClient
-  ): Unit = {
+  @tailrec
+  final def runTestCases(clientFactory: () ⇒ Client, testCases: List[(TestCase, ClassTestConf)]): Unit = {
     testCases match {
-      case (testCase, localConfig) :: remaining ⇒
-        val config = TestConfig(globalConfig, localConfig)
-        testCase.apply(config, clientFactory)
-        runTestCases(globalConfig, remaining, clientFactory)
+      case (testCase, conf) :: remaining ⇒
+        val client = clientFactory()
+        testCase(client, conf)
+        runTestCases(clientFactory, remaining)
 
       case _ ⇒
+    }
+  }
+
+  def main(profileConf: ProfileConf): Unit = {
+    val ok = new OkHttpClient
+    val clientFactory = () ⇒ new Client(profileConf, ok)
+
+    val effectiveClassTests = profileConf.effectiveClassTests
+
+    object ClassTestsCheck extends TestCaseSkeleton {
+      override def description = s"Check availability of classes from `${ConfKey.`class-tests`}`"
+      val stepsF = () ⇒
+        for {
+          effectiveClassTest ← effectiveClassTests
+          fqClassName = effectiveClassTest.testClassName
+        } yield {
+          TestStep.effect(s"class $fqClassName can be instantiated as a ${classOf[TestCase].getSimpleName}")(Class.forName(fqClassName).newInstance().asInstanceOf[TestCase])
+        }
+
+      def steps = stepsF()
+    }
+
+    ClassTestsCheck() match {
+      case TestCasePassed ⇒
+        // continue ONLY if all test classes can be instantiated
+        val testCases =
+          for {
+            classTestConf ← effectiveClassTests
+            fqClassName = classTestConf.testClassName
+            theClass = Class.forName(fqClassName)
+            testCase = theClass.newInstance().asInstanceOf[TestCase]
+          } yield {
+            testCase → classTestConf
+          }
+
+        runTestCases(clientFactory, testCases)
+
+      case _ ⇒
+        sys.exit(5)
     }
   }
 
@@ -58,7 +94,7 @@ object Main {
     val refConfig = ConfigFactory.parseResources("reference.conf").resolve()
 
     // Parse and validate -c
-    val configF = () ⇒
+    val cConfigF = () ⇒
       conf match {
         case "default" ⇒
           refConfig
@@ -74,16 +110,16 @@ object Main {
 
     object MasterConfCheck extends TestCaseSkeleton {
       override def description: String = s"Master configuration exists [$profile]"
-      def steps = List(TestStep.effect("Check provided configuration")(configF()))
+      def steps = List(TestStep.effect("Check provided configuration")(cConfigF()))
     }
-    MasterConfCheck.apply(TestConfig.Empty, () ⇒ null) match {
+    MasterConfCheck() match {
       case TestCaseNotPassed(_, _) ⇒
         sys.exit(2)
 
       case _ ⇒
     }
 
-    val config = configF()
+    val cConfig = cConfigF()
 
     // Parse and validate -x
     val xConfigF = () ⇒
@@ -98,7 +134,7 @@ object Main {
       override def description: String = s"Option -x"
       def steps = List(TestStep.effect("Check parameter for -x")(xConfigF()))
     }
-    XConfCheck.apply(TestConfig.Empty, () ⇒ null) match {
+    XConfCheck() match {
       case TestCaseNotPassed(_, _) ⇒
         sys.exit(3)
 
@@ -107,113 +143,14 @@ object Main {
 
     val xConfig = xConfigF()
 
-    val profileConfigF = () ⇒ configF().getConfig(s"${ConfKey.profiles}.$profile")
-    val profileHttpHeadersListF = () ⇒ profileConfigF().getStringList(ConfKey.`http-headers-list`)
-
-    val globalF  = () ⇒ configF().getConfig(ConfKey.global)
-    val globalRootUriF = () ⇒ globalF().getString(ConfKey.CDMI_ROOT_URI)
-    val globalHttpHeadersF = () ⇒ globalF().getConfig(ConfKey.`http-headers`)
-    val globalSpecVersionF = () ⇒ globalHttpHeadersF().getString(ConfKey.`X-CDMI-Specification-Version`)
-    val classTestsF = () ⇒ configF().getConfig(ConfKey.`class-tests`)
-    val shellTestsF = () ⇒ configF().getConfig(ConfKey.`shell-tests`)
-
-    val ok = new OkHttpClient
-    val clientFactory = () ⇒ new HttpClient(globalRootUriF(), ok, globalHttpHeadersF())
-
-    val fqClassNamesF = () ⇒ classTestsF().root().keySet().asScala.toList
-
-    // Validate configuration I
-    object ConfigurationCheck extends TestCaseSkeleton {
-      override def description: String = s"Master configuration is valid"
-
-      def steps = List(
-        TestStep.effect(s"Provided profile $profile exists")(profileConfigF()),
-        TestStep.effect(s"${ConfKey.`http-headers`} in the provided profile $profile exist")(globalHttpHeadersF()),
-        TestStep.effect( "`global` exists"              )(globalF()),
-        TestStep.effect( "`global.CDMI_ROOT_URI` exists")(globalRootUriF()),
-        TestStep.effect( "`global.http-headers` exists" )(globalHttpHeadersF()),
-        TestStep.effect( "`global.http-headers.X-CDMI-Specification-Version` exists")(globalSpecVersionF()),
-        TestStep.effect( "`class-tests` exists")(classTestsF()),
-        TestStep.effect( "`shell-tests` exists")(shellTestsF())
-      )
-    }
-
-    val profileHttpHeadersList = profileHttpHeadersListF()
-
-    val testConfig = TestConfig(config, ConfigFactory.empty())
-    ConfigurationCheck.apply(testConfig, clientFactory)  match {
-      case TestCaseNotPassed(_, _) ⇒
+    val profileConfEither = SuiteConf.parse(cConfig, profile, xConfig)
+    profileConfEither match {
+      case Left(error) ⇒
+        System.err.println(error)
         sys.exit(4)
 
-      case _ ⇒
-    }
-
-    val profileConfig = profileConfigF()
-
-    // Validate configuration II
-    object ClassTestsCheck extends TestCaseSkeleton {
-      override def description = s"Check availability of classes from `${ConfKey.`class-tests`}`"
-      val stepsF = () ⇒
-        for {
-          fqClassName ← fqClassNamesF()
-        } yield {
-          TestStep.effect(s"class $fqClassName can be instantiated as a ${classOf[TestCase].getSimpleName}")(Class.forName(fqClassName).newInstance().asInstanceOf[TestCase])
-        }
-
-      def steps = stepsF()
-    }
-
-    ClassTestsCheck   .apply(testConfig, clientFactory) match {
-      case TestCasePassed ⇒
-        // continue ONLY if all test classes can be instantiated
-        val fqClassNames = fqClassNamesF()
-        val classTests   = classTestsF()
-        val globalConfig = globalF()
-
-        val testCases =
-          for {
-            fqClassName ← fqClassNames
-            theClass = Class.forName(fqClassName)
-            theTest = theClass.newInstance().asInstanceOf[TestCase]
-          } yield {
-
-            val id = s""""$fqClassName""""
-            println("id = " + id)
-
-            // We get the original test-specific configuration (from the -c option in the command line)
-            val cTestConfig = classTests.getConfig(id)
-            println("cTestConfig = " + cTestConfig)
-
-            // We augment the test-specific configuration with the profile configuration (the former takes precedence)
-            // and then with the configuration of the -x option.
-            // NOTE that profileConfig contains a `http-headers-list`. This cannot be merged as is, since we need
-            //      a `http-headers` object (map) not list.
-            // Based on this list
-            //   * we select the specified headers from `global.http-headers`
-            //   * and override their values with those given in the `http-headers` of the -x option
-
-            // Keys of the -x configuration
-            val xKeys = xConfig.entrySet().asScala.map(_.getKey)
-            println("xKeys = " + xKeys)
-
-            val profileHeaderNames = profileHttpHeadersList.asScala.toList
-            println("profileHeaderNames = " + profileHeaderNames)
-
-            val pTestConfig = cTestConfig.withFallback(profileConfig)
-
-            // Overridden configuration, using -x from the command line
-            val xTestConfig = pTestConfig.withFallback(cTestConfig)
-            println("xTestConfig = " + xTestConfig)
-
-            (theTest, xTestConfig)
-
-            sys.exit(0)
-          }
-
-        runTestCases(globalConfig, testCases, clientFactory)
-
-      case _ ⇒
-        sys.exit(5)
+      case Right(profileConf) ⇒
+        main(profileConf)
     }
   }
 

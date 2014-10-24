@@ -15,39 +15,48 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package gr.grnet.cdmi.client.testmodel
+package gr.grnet.cdmi.client.business
 
 import com.squareup.okhttp._
-import com.typesafe.config.Config
+import gr.grnet.cdmi.client.conf.ProfileConf
 
-class HttpClient(
-  val rootUri: String,
-  ok: OkHttpClient,
-  extraHeaders: Config
-) {
+/**
+ *
+ */
+case class Client(profileConf: ProfileConf, ok: OkHttpClient) {
+  import gr.grnet.cdmi.client.business.Client._
 
-  import HttpClient._
-
-  def xCdmiSpecificationVersion = extraHeaders.getString(HttpClient.X_CDMI_Specification_Version)
+  def rootUri = profileConf.rootURI.toString
+  def xCdmiSpecificationVersion = profileConf.httpHeaders(X_CDMI_Specification_Version)
 
   class HttpRequestBuilder(okBuilder: Request.Builder) {
     var _contentType: String = _
-    def header(name: String, value: String): HttpRequestBuilder = {
+    def header(name: String, value: String): this.type = {
       okBuilder.addHeader(name, value)
-      if(name == HttpClient.Content_Type) _contentType = value
+      if(name == Client.Content_Type) _contentType = value
       this
     }
 
-    def fromExtraHeaders(name: String): HttpRequestBuilder = {
-      val value = extraHeaders.getString(name)
+    def profileHeader(name: String): this.type = {
+      val value = profileConf.httpHeaders(name)
       header(name, value)
     }
 
-    def setXCdmiSpecificationVersion(version: String): HttpRequestBuilder =
-      header(X_CDMI_Specification_Version, version)
+//    def setXCdmiSpecificationVersion(version: String): this.type =
+//      header(X_CDMI_Specification_Version, version)
+//
+//    def setXCdmiSpecificationVersion(): this.type =
+//      setXCdmiSpecificationVersion(xCdmiSpecificationVersion)
 
-    def setXCdmiSpecificationVersion(): HttpRequestBuilder =
-      setXCdmiSpecificationVersion(xCdmiSpecificationVersion)
+    def profileHeaders(): this.type = {
+      for {
+        (name, value) ← profileConf.httpHeaders
+      } {
+        header(name, value)
+      }
+
+      this
+    }
 
     def accept(mime: String)   = header(Accept, mime)
     def acceptAny()            = header(Accept, "*/*")
@@ -58,7 +67,7 @@ class HttpClient(
     def contentType(mime: String) = header(Content_Type, mime)
     def contentTypeCdmiObject()   = contentType(Application_Cdmi_Object)
 
-    def xAuthToken(token: String) = header(HttpClient.X_Auth_Token, token)
+    def xAuthToken(token: String) = header(Client.X_Auth_Token, token)
 
     def get   (): Request                  = okBuilder.get().build()
     def put   (body: RequestBody): Request = okBuilder.put(body).build()
@@ -71,7 +80,7 @@ class HttpClient(
     def put(body: String): Request =
       _contentType match {
         case null ⇒
-          throw new Exception(s"No ${HttpClient.Content_Type} given for PUT")
+          throw new Exception(s"No ${Client.Content_Type} given for PUT")
 
         case _ ⇒
           put(_contentType, body)
@@ -80,7 +89,7 @@ class HttpClient(
     def post(body: String): Request =
       _contentType match {
         case null ⇒
-          throw new Exception(s"No ${HttpClient.Content_Type} given for POST")
+          throw new Exception(s"No ${Client.Content_Type} given for POST")
 
         case _ ⇒
           post(_contentType, body)
@@ -111,7 +120,7 @@ class HttpClient(
   def execute(request: Request): Response = ok.newCall(request).execute()
 }
 
-object HttpClient {
+object Client {
   val X_CDMI_Specification_Version = "X-CDMI-Specification-Version"
   val X_Auth_Token = "X-Auth-Token"
   val Accept = "Accept"

@@ -30,4 +30,5 @@ object ConfKey {
   val `X-CDMI-Specification-Version` = "X-CDMI-Specification-Version"
   val `class-tests` = "class-tests"
   val `class-tests-list` = "class-tests-list"
+  val `class-tests-header-lists` = "class-tests-header-lists"
 }

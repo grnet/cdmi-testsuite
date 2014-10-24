@@ -16,7 +16,9 @@
  */
 
 package gr.grnet.cdmi.client
-package testmodel
+package business
+
+import gr.grnet.cdmi.client.conf.ClassTestConf
 
 import scala.annotation.tailrec
 
@@ -24,23 +26,21 @@ trait TestCase {
   def steps: List[TestStep]
 
   def id = getClass.getName
+
   def description = {
     val name = this.getClass.getName
     val i = name.lastIndexOf('.')
     name.substring(i + 1)
   }
 
-  def apply(
-    config: TestConfig,
-    clientFactory: () ⇒ HttpClient
-  ): TestCaseResult = {
-    lazy val client = clientFactory.apply()
+  def apply(): TestCaseResult = apply(null, ClassTestConf.Empty)
 
+  def apply(client: Client, conf: ClassTestConf): TestCaseResult = {
     def LOG(s: String): Unit = System.out.println(s)
 
     def applyStep(step: TestStep): Option[Throwable] =
       try {
-        step.apply(config, client)
+        step(client, conf)
         None
       }
       catch {
