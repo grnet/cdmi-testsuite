@@ -15,11 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package gr.grnet.cdmi.client
+package gr.grnet.cdmi.client.conf
 
 /**
  *
  */
-class Util {
-
-}
+case class Header(name: String, value: String)

@@ -22,10 +22,10 @@ import java.io.File
 import com.beust.jcommander.ParameterException
 import com.squareup.okhttp.OkHttpClient
 import com.typesafe.config._
+import gr.grnet.cdmi.client.business._
 import gr.grnet.cdmi.client.cmdline.Args
 import gr.grnet.cdmi.client.cmdline.Args.ParsedCmdLine
-import gr.grnet.cdmi.client.conf.{ClassTestConf, ConfKey, ProfileConf, SuiteConf}
-import gr.grnet.cdmi.client.business._
+import gr.grnet.cdmi.client.conf.{FullConf, Key, TestConf}
 
 import scala.annotation.tailrec
 
@@ -36,7 +36,7 @@ object Main {
   type HeaderKeyValue = (String, String)
 
   @tailrec
-  final def runTestCases(clientFactory: () ⇒ Client, testCases: List[(TestCase, ClassTestConf)]): Unit = {
+  final def runTestCases(clientFactory: () ⇒ Client, testCases: List[(TestCase, TestConf)]): Unit = {
     testCases match {
       case (testCase, conf) :: remaining ⇒
         val client = clientFactory()
@@ -47,51 +47,16 @@ object Main {
     }
   }
 
-  def main(profileConf: ProfileConf): Unit = {
-    val ok = new OkHttpClient
-    val clientFactory = () ⇒ new Client(profileConf, ok)
-
-    val effectiveClassTests = profileConf.effectiveClassTests
-
-    object ClassTestsCheck extends TestCaseSkeleton {
-      override def description = s"Check availability of classes from `${ConfKey.`class-tests`}`"
-      val stepsF = () ⇒
-        for {
-          effectiveClassTest ← effectiveClassTests
-          fqClassName = effectiveClassTest.testClassName
-        } yield {
-          TestStep.effect(s"class $fqClassName can be instantiated as a ${classOf[TestCase].getSimpleName}")(Class.forName(fqClassName).newInstance().asInstanceOf[TestCase])
-        }
-
-      def steps = stepsF()
-    }
-
-    ClassTestsCheck() match {
-      case TestCasePassed ⇒
-        // continue ONLY if all test classes can be instantiated
-        val testCases =
-          for {
-            classTestConf ← effectiveClassTests
-            fqClassName = classTestConf.testClassName
-            theClass = Class.forName(fqClassName)
-            testCase = theClass.newInstance().asInstanceOf[TestCase]
-          } yield {
-            testCase → classTestConf
-          }
-
-        runTestCases(clientFactory, testCases)
+  def acceptOrExit(testCase: TestCase, exitCode: Int): Unit =
+    testCase() match {
+      case TestCaseNotPassed(_, _) ⇒
+        sys.exit(exitCode)
 
       case _ ⇒
-        sys.exit(5)
     }
-  }
 
-  def main(options: Args.GlobalOptions): Unit = {
-    val conf = options.conf
-    val profile = options.profile
-    val xconf = options.xconf
-
-    val refConfig = ConfigFactory.parseResources("reference.conf").resolve()
+  def parseConf(conf: String): Config = {
+    lazy val refConfig = ConfigFactory.parseResources("reference.conf")
 
     // Parse and validate -c
     val cConfigF = () ⇒
@@ -99,28 +64,23 @@ object Main {
         case "default" ⇒
           refConfig
 
-        case path ⇒
-          val config = ConfigFactory.parseFile(new File(path).getAbsoluteFile).resolve()
-          config.checkValid(
-            refConfig,
-            "global", "profiles", "class-tests", "class-tests-list", "shell-tests"
-          )
+        case path_ if path_.startsWith("@") ⇒
+          val path = path_.substring(1)
+          val config = ConfigFactory.parseFile(new File(path).getAbsoluteFile)
+          config.checkValid(refConfig)
           config
       }
 
     object MasterConfCheck extends TestCaseSkeleton {
-      override def description: String = s"Master configuration exists [$profile]"
+      override def description: String = s"Master configuration exists"
       def steps = List(TestStep.effect("Check provided configuration")(cConfigF()))
     }
-    MasterConfCheck() match {
-      case TestCaseNotPassed(_, _) ⇒
-        sys.exit(2)
+    acceptOrExit(MasterConfCheck, 2)
 
-      case _ ⇒
-    }
+    cConfigF()
+  }
 
-    val cConfig = cConfigF()
-
+  def parseXConf(xconf: String): Config = {
     // Parse and validate -x
     val xConfigF = () ⇒
       if(xconf.startsWith("@")) {
@@ -134,24 +94,66 @@ object Main {
       override def description: String = s"Option -x"
       def steps = List(TestStep.effect("Check parameter for -x")(xConfigF()))
     }
-    XConfCheck() match {
-      case TestCaseNotPassed(_, _) ⇒
-        sys.exit(3)
+    acceptOrExit(XConfCheck, 3)
+
+    xConfigF()
+  }
+
+  def main(fullConf: FullConf): Unit = {
+    val ok = new OkHttpClient
+    val clientFactory = () ⇒ new Client(fullConf, ok)
+
+    val testConfs = fullConf.tests
+
+    object ClassTestsCheck extends TestCaseSkeleton {
+      override def description = s"Check availability of classes from `${Key.tests}`"
+      val stepsF = () ⇒
+        for {
+          testConf ← testConfs
+          className = testConf.className
+        } yield {
+          TestStep.effect(s"class $className can be instantiated as a ${classOf[TestCase].getSimpleName}")(Class.forName(className).newInstance().asInstanceOf[TestCase])
+        }
+
+      def steps = stepsF()
+    }
+
+    ClassTestsCheck() match {
+      case TestCasePassed ⇒
+        // continue ONLY if all test classes can be instantiated
+        val testCases =
+          for {
+            testConf ← testConfs
+            className = testConf.className
+            theClass = Class.forName(className)
+            testCase = theClass.newInstance().asInstanceOf[TestCase]
+          } yield {
+            testCase → testConf
+          }
+
+        runTestCases(clientFactory, testCases)
 
       case _ ⇒
+        sys.exit(5)
+    }
+  }
+
+  def main(options: Args.GlobalOptions): Unit = {
+    val conf = options.conf
+    val xconf = options.xconf match {
+      case "" ⇒ "{}"
+      case s ⇒ s
     }
 
-    val xConfig = xConfigF()
+    val cConfig = parseConf(conf).resolve()
+    val xConfig = parseXConf(xconf).resolve()
 
-    val profileConfEither = SuiteConf.parse(cConfig, profile, xConfig)
-    profileConfEither match {
-      case Left(error) ⇒
-        System.err.println(error)
-        sys.exit(4)
+    val config = xConfig.withFallback(cConfig).resolve()
+    val allHeaders = config.getList(Key.`all-headers`)
+    println("allHeaders = " + allHeaders)
+    val fullConf = FullConf.parse(config)
 
-      case Right(profileConf) ⇒
-        main(profileConf)
-    }
+    main(fullConf)
   }
 
   def main(args: Array[String]): Unit = {

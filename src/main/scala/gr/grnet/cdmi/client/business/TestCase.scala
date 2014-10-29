@@ -18,7 +18,7 @@
 package gr.grnet.cdmi.client
 package business
 
-import gr.grnet.cdmi.client.conf.ClassTestConf
+import gr.grnet.cdmi.client.conf.TestConf
 
 import scala.annotation.tailrec
 
@@ -33,9 +33,9 @@ trait TestCase {
     name.substring(i + 1)
   }
 
-  def apply(): TestCaseResult = apply(null, ClassTestConf.Empty)
+  def apply(): TestCaseResult = apply(null, null)
 
-  def apply(client: Client, conf: ClassTestConf): TestCaseResult = {
+  def apply(client: Client, conf: TestConf): TestCaseResult = {
     def LOG(s: String): Unit = System.out.println(s)
 
     def applyStep(step: TestStep): Option[Throwable] =

@@ -15,18 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package gr.grnet.cdmi.client.business
+package gr.grnet.cdmi.client
 
-import gr.grnet.cdmi.client.conf.TestConf
+import com.typesafe.config.Config
 
-case class TestStep(description: String)(f: (Client, TestConf) ⇒ Unit) {
-  def apply(client: Client, conf: TestConf): Unit = f(client, conf)
-}
-
-object TestStep {
-  def condition(description: String)(condition: ⇒Boolean): TestStep =
-    TestStep(description) { (_,_) ⇒ Predef.assert(condition, description) }
-
-  def effect(description: String)(justdoit: ⇒Unit): TestStep =
-    TestStep(description) { (_,_) ⇒ justdoit }
+/**
+ *
+ */
+package object conf {
+  def parseHeader(config: Config): Header = {
+    val entry = config.entrySet().iterator().next()
+    Header(entry.getKey, entry.getValue.unwrapped().toString)
+  }
 }

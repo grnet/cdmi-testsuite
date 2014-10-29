@@ -19,7 +19,7 @@ package gr.grnet.cdmi.client.business
 
 import com.squareup.okhttp.{MediaType, Response}
 import com.typesafe.config.Config
-import gr.grnet.cdmi.client.conf.ClassTestConf
+import gr.grnet.cdmi.client.conf.TestConf
 
 /**
  *
@@ -43,7 +43,8 @@ trait TestCaseSkeleton extends TestCase {
 
     if(checkSpecHeader) {
       val specVersion = response.header(Client.X_CDMI_Specification_Version)
-      assert(specVersion == client.xCdmiSpecificationVersion, s"specVersion [=$specVersion] == client.xCdmiSpecificationVersion [=${client.xCdmiSpecificationVersion}]")
+
+      assert(specVersion == client.fullConf.`cdmi-spec-version`, s"specVersion [=$specVersion] == client.xCdmiSpecificationVersion [=${client.xCdmiSpecificationVersion}]")
     }
 
     checkContentTypeOpt match {
@@ -68,7 +69,7 @@ trait TestCaseSkeleton extends TestCase {
     extra
   }
 
-  def getObjectPathPrefix(conf: ClassTestConf): String = {
+  def getObjectPathPrefix(conf: TestConf): String = {
     val path = "object-path-prefix"
     val specific = conf.specific
 
@@ -80,7 +81,7 @@ trait TestCaseSkeleton extends TestCase {
     objectPathPrefix
   }
 
-  def getJsonBody(conf: ClassTestConf): Config = {
+  def getJsonBody(conf: TestConf): Config = {
     val path = "json-body"
     val specific = conf.specific
     val jsonBody = specific.getConfig(path)

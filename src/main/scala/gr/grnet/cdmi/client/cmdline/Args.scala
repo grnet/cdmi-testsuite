@@ -38,19 +38,13 @@ object Args {
 
     @Parameter(
       names = Array("-c"),
-      description = "The configuration file the application uses. Use 'default' to load the builtin configuration",
+      description = "The configuration file the application uses. Use 'default' to load the builtin configuration. " +
+                    "You can provide the configuration inline or by giving a file path. " +
+                    "For the latter case, prepend an at sign '@'",
       required = true,
       validateWith = classOf[NotEmptyStringValidator]
     )
     val conf: String = null
-
-    @Parameter(
-      names = Array("-p"),
-      description = "Selects the profile from the configuration",
-      required = true,
-      validateWith = classOf[NotEmptyStringValidator]
-    )
-    val profile: String = null
 
     @Parameter(
       names = Array("-x"),
@@ -59,7 +53,7 @@ object Args {
                     "For the latter case, prepend an at sign '@'",
       validateWith = classOf[NotEmptyStringValidator]
     )
-    val xconf: String = null
+    val xconf: String = "{}"
   }
 
   object ParsedCmdLine {

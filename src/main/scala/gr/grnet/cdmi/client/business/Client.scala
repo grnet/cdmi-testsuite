@@ -18,16 +18,16 @@
 package gr.grnet.cdmi.client.business
 
 import com.squareup.okhttp._
-import gr.grnet.cdmi.client.conf.ProfileConf
+import gr.grnet.cdmi.client.conf.{FullConf, Header}
 
 /**
  *
  */
-case class Client(profileConf: ProfileConf, ok: OkHttpClient) {
+case class Client(fullConf: FullConf, ok: OkHttpClient) {
   import gr.grnet.cdmi.client.business.Client._
 
-  def rootUri = profileConf.rootURI.toString
-  def xCdmiSpecificationVersion = profileConf.httpHeaders(X_CDMI_Specification_Version)
+  def rootURIStr = fullConf.`root-uri`.toString
+  def xCdmiSpecificationVersion = fullConf.`cdmi-spec-version`
 
   class HttpRequestBuilder(okBuilder: Request.Builder) {
     var _contentType: String = _
@@ -37,21 +37,8 @@ case class Client(profileConf: ProfileConf, ok: OkHttpClient) {
       this
     }
 
-    def profileHeader(name: String): this.type = {
-      val value = profileConf.httpHeaders(name)
-      header(name, value)
-    }
-
-//    def setXCdmiSpecificationVersion(version: String): this.type =
-//      header(X_CDMI_Specification_Version, version)
-//
-//    def setXCdmiSpecificationVersion(): this.type =
-//      setXCdmiSpecificationVersion(xCdmiSpecificationVersion)
-
-    def profileHeaders(): this.type = {
-      for {
-        (name, value) ← profileConf.httpHeaders
-      } {
+    def applyHeaders(headers: List[Header]): this.type = {
+      for(Header(name, value) ← headers) {
         header(name, value)
       }
 
@@ -97,11 +84,11 @@ case class Client(profileConf: ProfileConf, ok: OkHttpClient) {
   }
 
   def makeUrl(path: String): String =
-    (rootUri.endsWith("/"), path.startsWith("/")) match {
-      case (true, true)   ⇒ rootUri + path.substring(1)
-      case (true, false)  ⇒ rootUri + path
-      case (false, true)  ⇒ rootUri + path
-      case (false, false) ⇒ rootUri + "/" + path
+    (rootURIStr.endsWith("/"), path.startsWith("/")) match {
+      case (true, true)   ⇒ rootURIStr + path.substring(1)
+      case (true, false)  ⇒ rootURIStr + path
+      case (false, true)  ⇒ rootURIStr + path
+      case (false, false) ⇒ rootURIStr + "/" + path
     }
 
   def apply(path: String): HttpRequestBuilder = {

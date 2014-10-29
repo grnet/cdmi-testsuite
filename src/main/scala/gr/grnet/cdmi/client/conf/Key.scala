@@ -20,15 +20,16 @@ package gr.grnet.cdmi.client.conf
 /**
  *
  */
-object ConfKey {
-  val global = "global"
-  val profiles = "profiles"
-  val specific = "specific"
-
-  val `root-uri` = "root-uri"
-  val `http-headers` = "http-headers"
-  val `X-CDMI-Specification-Version` = "X-CDMI-Specification-Version"
-  val `class-tests` = "class-tests"
-  val `class-tests-list` = "class-tests-list"
-  val `class-tests-header-lists` = "class-tests-header-lists"
+object Key {
+  final val specific = "specific"
+  final val tests = "tests"
+  final val className = "className"
+  final val `root-uri` = "root-uri"
+  final val `http-headers` = "http-headers"
+  final val `cdmi-spec-version` = "cdmi-spec-version"
+  final val `cdmi-header` = "cdmi-header"
+  final val `std-headers` = "std-headers"
+  final val `extra-headers` = "extra-headers"
+  final val `all-headers` = "all-headers"
+//  final val `X-CDMI-Specification-Version` = "X-CDMI-Specification-Version"
 }
