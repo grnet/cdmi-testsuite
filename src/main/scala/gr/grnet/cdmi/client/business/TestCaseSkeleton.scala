@@ -28,7 +28,8 @@ trait TestCaseSkeleton extends TestCase {
   def checkFailedResponse(response: Response): Unit = {
     val code = response.code()
     val message = response.message()
-    assert(!response.isSuccessful, s"!response.isSuccessful [code=$code, msg=$message]")
+    val body = response.body().string()
+    assert(!response.isSuccessful, s"!response.isSuccessful [$code|$message|$body]")
   }
 
   def checkResponse(
@@ -39,7 +40,8 @@ trait TestCaseSkeleton extends TestCase {
   ): Unit = {
     val code = response.code()
     val message = response.message()
-    assert(response.isSuccessful, s"response.isSuccessful [code=$code, msg=$message]")
+    val body = response.body().string()
+    assert(response.isSuccessful, s"response.isSuccessful [$code|$message|$body]")
 
     if(checkSpecHeader) {
       val specVersion = response.header(Client.X_CDMI_Specification_Version)
