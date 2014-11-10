@@ -45,15 +45,6 @@ object Args {
       validateWith = classOf[NotEmptyStringValidator]
     )
     val conf: String = null
-
-    @Parameter(
-      names = Array("-x"),
-      description = "Extra, overriding configuration that applies to the chosen profile. " +
-                    "You can provide the configuration inline or by giving a file path. " +
-                    "For the latter case, prepend an at sign '@'",
-      validateWith = classOf[NotEmptyStringValidator]
-    )
-    val xconf: String = "{}"
   }
 
   object ParsedCmdLine {
@@ -65,9 +56,7 @@ object Args {
     val jc = new JCommander()
 
     jc.setProgramName(Main.getClass.getName.dropRight(1))
-
     jc.addObject(ParsedCmdLine.globalOptions)
-
     jc
   }
 

@@ -140,17 +140,8 @@ object Main {
 
   def main(options: Args.GlobalOptions): Unit = {
     val conf = options.conf
-    val xconf = options.xconf match {
-      case "" ⇒ "{}"
-      case s ⇒ s
-    }
-
-    val cConfig = parseConf(conf).resolve()
-    val xConfig = parseXConf(xconf).resolve()
-
-    val config = xConfig.withFallback(cConfig).resolve()
-    val allHeaders = config.getList(Key.`all-headers`)
-    println("allHeaders = " + allHeaders)
+    val config = parseConf(conf).resolve()
+    //val allHeaders = config.getList(Key.`all-headers`)
     val fullConf = FullConf.parse(config)
 
     main(fullConf)
