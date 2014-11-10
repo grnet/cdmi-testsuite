@@ -38,9 +38,9 @@ object Args {
 
     @Parameter(
       names = Array("-c"),
-      description = "The configuration file the application uses. Use 'default' to load the builtin configuration. " +
-                    "You can provide the configuration inline or by giving a file path. " +
-                    "For the latter case, prepend an at sign '@'",
+      description = "The configuration file the application uses." +
+                    " Use 'default' to load the builtin configuration," +
+                    " though it may not be of much help for your runtime environment",
       required = true,
       validateWith = classOf[NotEmptyStringValidator]
     )
