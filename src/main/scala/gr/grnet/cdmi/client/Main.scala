@@ -56,7 +56,7 @@ object Main {
     }
 
   def parseConf(conf: String): Config = {
-    lazy val refConfig = ConfigFactory.parseResources("reference.conf")
+    lazy val refConfig = ConfigFactory.parseResources("reference.conf").resolve()
 
     // Parse and validate -c
     val cConfigF = () ⇒
@@ -64,9 +64,8 @@ object Main {
         case "default" ⇒
           refConfig
 
-        case path_ if path_.startsWith("@") ⇒
-          val path = path_.substring(1)
-          val config = ConfigFactory.parseFile(new File(path).getAbsoluteFile)
+        case path ⇒
+          val config = ConfigFactory.parseFile(new File(path).getAbsoluteFile).resolve()
           config.checkValid(refConfig)
           config
       }
