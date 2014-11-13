@@ -78,26 +78,7 @@ object Main {
 
     cConfigF()
   }
-
-  def parseXConf(xconf: String): Config = {
-    // Parse and validate -x
-    val xConfigF = () ⇒
-      if(xconf.startsWith("@")) {
-        ConfigFactory.parseFile(new File(xconf.substring(1)).getAbsoluteFile).resolve()
-      }
-      else {
-        ConfigFactory.parseString(xconf).resolve()
-      }
-
-    object XConfCheck extends TestCaseSkeleton {
-      override def description: String = s"Option -x"
-      def steps = List(TestStep.effect("Check parameter for -x")(xConfigF()))
-    }
-    acceptOrExit(XConfCheck, 3)
-
-    xConfigF()
-  }
-
+  
   def main(fullConf: FullConf): Unit = {
     val ok = new OkHttpClient
     val clientFactory = () ⇒ new Client(fullConf, ok)

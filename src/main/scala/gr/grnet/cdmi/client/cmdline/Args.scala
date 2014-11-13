@@ -17,18 +17,13 @@
 
 package gr.grnet.cdmi.client.cmdline
 
-import com.beust.jcommander.{JCommander, Parameter, Parameters}
+import com.beust.jcommander.{JCommander, Parameter}
 import gr.grnet.cdmi.client.Main
 
 /**
  *
  */
 object Args {
-  def nameOf(cmd: AnyRef): String = {
-    val p = cmd.getClass.getAnnotation(classOf[Parameters])
-    p.commandNames()(0)
-  }
-
   class GlobalOptions {
     @Parameter(
       names = Array("-h", "-help", "--help"),
