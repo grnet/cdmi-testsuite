@@ -37,6 +37,11 @@ case class Client(fullConf: FullConf, ok: OkHttpClient) {
       this
     }
 
+    def noHeader(name: String): this.type = {
+      okBuilder.removeHeader(name)
+      this
+    }
+
     def applyHeaders(headers: List[Header]): this.type = {
       for(Header(name, value) ← headers) {
         header(name, value)
