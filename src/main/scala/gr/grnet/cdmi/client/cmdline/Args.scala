@@ -37,7 +37,7 @@ object Args {
                     " Use 'default' to load the builtin configuration," +
                     " though it may not be of much help for your runtime environment",
       required = true,
-      validateWith = classOf[NotEmptyStringValidator]
+      validateWith = classOf[FileValidator]
     )
     val conf: String = null
   }

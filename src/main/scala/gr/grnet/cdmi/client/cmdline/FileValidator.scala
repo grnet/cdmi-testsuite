@@ -17,19 +17,23 @@
 
 package gr.grnet.cdmi.client.cmdline
 
+import java.io.File
+
 import com.beust.jcommander.{ParameterException, IParameterValidator}
 
 /**
  *
  */
-class NotEmptyStringValidator extends IParameterValidator {
-  def validate(name: String, value: String): Unit =
-    value match {
-      case null ⇒ throw new ParameterException(s"Parameter $name is null")
-      case ""   ⇒ throw new ParameterException(s"Parameter $name is empty")
-      case s if s.trim.isEmpty ⇒ throw new ParameterException(s"Parameter $name is empty (just spaces)")
-      case _ ⇒
-    }
-}
+class FileValidator extends IParameterValidator {
+  def validate(name: String, value: String): Unit = {
+    NotEmptyStringValidator.validate(name, value)
 
-object NotEmptyStringValidator extends NotEmptyStringValidator
+    val file = new File(value)
+    if(!file.isFile) {
+      throw new ParameterException(s"'$value' is not a file")
+    }
+    if(file.length() == 0) {
+      throw new ParameterException(s"'$value' is an empty file")
+    }
+  }
+}
