@@ -40,8 +40,13 @@ object Main {
     testCases match {
       case (testCase, conf) :: remaining ⇒
         val client = clientFactory()
-        testCase(client, conf)
-        runTestCases(clientFactory, remaining)
+        val result = testCase(client, conf)
+        if(result.passed || !testCase.fatalOnError) {
+          runTestCases(clientFactory, remaining)
+        }
+        else if(!remaining.isEmpty) {
+          System.err.println(s"Aborting other test cases due to fatal error in '${testCase.description}'")
+        }
 
       case _ ⇒
     }
@@ -50,7 +55,9 @@ object Main {
   def acceptOrExit(testCase: TestCase, exitCode: Int): Unit =
     testCase() match {
       case TestCaseNotPassed(_, _) ⇒
-        sys.exit(exitCode)
+        if(testCase.fatalOnError) {
+          sys.exit(exitCode)
+        }
 
       case _ ⇒
     }
