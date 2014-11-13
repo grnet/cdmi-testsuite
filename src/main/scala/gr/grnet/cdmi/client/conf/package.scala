@@ -15,21 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package gr.grnet.cdmi.client.cmdline
+package gr.grnet.cdmi.client
 
-import com.beust.jcommander.{ParameterException, IParameterValidator}
+import com.typesafe.config.Config
 
 /**
  *
  */
-class NotEmptyStringValidator extends IParameterValidator {
-  def validate(name: String, value: String): Unit =
-    value match {
-      case null ⇒ throw new ParameterException(s"Parameter $name is null")
-      case ""   ⇒ throw new ParameterException(s"Parameter $name is empty")
-      case s if s.trim.isEmpty ⇒ throw new ParameterException(s"Parameter $name is empty (just spaces)")
-      case _ ⇒
-    }
+package object conf {
+  def parseHeader(config: Config): Header = {
+    val entry = config.entrySet().iterator().next()
+    Header(entry.getKey, entry.getValue.unwrapped().toString)
+  }
 }
-
-object NotEmptyStringValidator extends NotEmptyStringValidator

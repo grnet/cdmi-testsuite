@@ -15,16 +15,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package gr.grnet.cdmi.client.testmodel
+package gr.grnet.cdmi.client.conf
 
-case class TestStep(description: String)(f: (TestConfig, HttpClient) ⇒ Unit) {
-  def apply(config: TestConfig, client: ⇒HttpClient): Unit = f(config, client)
-}
-
-object TestStep {
-  def condition(description: String)(condition: ⇒Boolean): TestStep =
-    TestStep(description) { (_,_) ⇒ Predef.assert(condition, description) }
-
-  def effect(description: String)(justdoit: ⇒Unit): TestStep =
-    TestStep(description) { (_,_) ⇒ justdoit }
+/**
+ *
+ */
+object Key {
+  final val specific = "specific"
+  final val tests = "tests"
+  final val className = "className"
+  final val `root-uri` = "root-uri"
+  final val `http-headers` = "http-headers"
+  final val `cdmi-spec-version` = "cdmi-spec-version"
+  final val `cdmi-header` = "cdmi-header"
+  final val `std-headers` = "std-headers"
+  final val `extra-headers` = "extra-headers"
+  final val `all-headers` = "all-headers"
+//  final val `X-CDMI-Specification-Version` = "X-CDMI-Specification-Version"
 }

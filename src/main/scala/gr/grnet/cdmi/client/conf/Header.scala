@@ -15,17 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package gr.grnet.cdmi.client.testmodel
-
-import com.typesafe.config.{ConfigFactory, Config}
+package gr.grnet.cdmi.client.conf
 
 /**
  *
  */
-case class TestConfig(global: Config, local: Config) {
-  def render = (global.root().render(), local.root().render())
-}
-
-object TestConfig {
-  val Empty = TestConfig(ConfigFactory.empty(), ConfigFactory.empty())
-}
+case class Header(name: String, value: String)

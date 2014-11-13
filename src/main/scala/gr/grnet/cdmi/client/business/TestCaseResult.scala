@@ -15,9 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package gr.grnet.cdmi.client.testmodel
+package gr.grnet.cdmi.client.business
 
-sealed trait TestCaseResult
+sealed trait TestCaseResult {
+  def passed: Boolean
+}
 
-case object TestCasePassed extends TestCaseResult
-case class TestCaseNotPassed(badStepDescription: String, errorOpt: Option[Throwable]) extends TestCaseResult
+case object TestCasePassed extends TestCaseResult {
+  def passed: Boolean = true
+}
+
+case class TestCaseNotPassed(badStepDescription: String, errorOpt: Option[Throwable]) extends TestCaseResult {
+  def passed: Boolean = false
+}

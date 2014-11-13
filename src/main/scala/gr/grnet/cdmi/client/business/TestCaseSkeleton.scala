@@ -15,34 +15,38 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package gr.grnet.cdmi.client.testmodel
+package gr.grnet.cdmi.client.business
 
 import com.squareup.okhttp.{MediaType, Response}
 import com.typesafe.config.Config
+import gr.grnet.cdmi.client.conf.TestConf
 
 /**
  *
  */
-trait TestCaseSkeleton extends TestCase {
+abstract class TestCaseSkeleton(val fatalOnError: Boolean) extends TestCase {
   def checkFailedResponse(response: Response): Unit = {
     val code = response.code()
     val message = response.message()
-    assert(!response.isSuccessful, s"!response.isSuccessful [code=$code, msg=$message]")
+    val body = response.body().string()
+    assert(!response.isSuccessful, s"!response.isSuccessful [$code|$message|$body]")
   }
 
   def checkResponse(
     response: Response,
-    client: HttpClient,
+    client: Client,
     checkSpecHeader: Boolean,
     checkContentTypeOpt: Option[String] = None
   ): Unit = {
     val code = response.code()
     val message = response.message()
-    assert(response.isSuccessful, s"response.isSuccessful [code=$code, msg=$message]")
+    val body = response.body().string()
+    assert(response.isSuccessful, s"response.isSuccessful [$code|$message|$body]")
 
     if(checkSpecHeader) {
-      val specVersion = response.header(HttpClient.X_CDMI_Specification_Version)
-      assert(specVersion == client.xCdmiSpecificationVersion, s"specVersion [=$specVersion] == client.xCdmiSpecificationVersion [=${client.xCdmiSpecificationVersion}]")
+      val specVersion = response.header(Client.X_CDMI_Specification_Version)
+
+      assert(specVersion == client.fullConf.`cdmi-spec-version`, s"specVersion [=$specVersion] == client.xCdmiSpecificationVersion [=${client.xCdmiSpecificationVersion}]")
     }
 
     checkContentTypeOpt match {
@@ -50,7 +54,7 @@ trait TestCaseSkeleton extends TestCase {
       case Some(expectedContentType) ⇒
         val expectedMediaType = MediaType.parse(expectedContentType)
         val expectedTypeSubtype = expectedMediaType.`type`() + "/" + expectedMediaType.subtype()
-        val contentType = response.header(HttpClient.Content_Type)
+        val contentType = response.header(Client.Content_Type)
         val mediaType = MediaType.parse(contentType)
         val typeSubtype =  mediaType.`type`() + "/" + mediaType.subtype()
         assert(typeSubtype == expectedTypeSubtype, s"contentType [=$typeSubtype] == expectedContentType [=$expectedTypeSubtype]")
@@ -59,7 +63,7 @@ trait TestCaseSkeleton extends TestCase {
 
   def checkResponseX(
     response: Response,
-    client: HttpClient,
+    client: Client,
     checkSpecHeader: Boolean,
     checkContentTypeOpt: Option[String] = None
   )(extra: ⇒ Unit): Unit = {
@@ -67,11 +71,11 @@ trait TestCaseSkeleton extends TestCase {
     extra
   }
 
-  def getObjectPathPrefix(config: TestConfig): String = {
-    val TestConfig(global, local) = config
+  def getObjectPathPrefix(conf: TestConf): String = {
     val path = "object-path-prefix"
+    val specific = conf.specific
 
-    val objectPathPrefix = local.getString(path)
+    val objectPathPrefix = specific.getString(path)
 
     assert(objectPathPrefix.startsWith("/"), s"objectPathPrefix [=$objectPathPrefix] starts with '/'")
     assert(objectPathPrefix.endsWith("/"), s"objectPathPrefix [=$objectPathPrefix] ends with '/'")
@@ -79,18 +83,11 @@ trait TestCaseSkeleton extends TestCase {
     objectPathPrefix
   }
 
-  def getJsonBody(config: TestConfig): Config = {
-    val TestConfig(_, local) = config
+  def getJsonBody(conf: TestConf): Config = {
     val path = "json-body"
-    val jsonBody = local.getConfig(path)
+    val specific = conf.specific
+    val jsonBody = specific.getConfig(path)
     jsonBody
-  }
-
-  def getXAuthToken(config: TestConfig): String = {
-    val TestConfig(global, _) = config
-    val xAuthToken = global.getString("http-headers.X-Auth-Token")
-    assert(!xAuthToken.isEmpty, "!xAuthToken.isEmpty")
-    xAuthToken
   }
 }
 

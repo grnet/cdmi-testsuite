@@ -17,18 +17,13 @@
 
 package gr.grnet.cdmi.client.cmdline
 
-import com.beust.jcommander.{JCommander, Parameter, Parameters}
+import com.beust.jcommander.{JCommander, Parameter}
 import gr.grnet.cdmi.client.Main
 
 /**
  *
  */
 object Args {
-  def nameOf(cmd: AnyRef): String = {
-    val p = cmd.getClass.getAnnotation(classOf[Parameters])
-    p.commandNames()(0)
-  }
-
   class GlobalOptions {
     @Parameter(
       names = Array("-h", "-help", "--help"),
@@ -38,28 +33,13 @@ object Args {
 
     @Parameter(
       names = Array("-c"),
-      description = "The configuration file the application uses. Use 'default' to load the builtin configuration",
+      description = "The configuration file the application uses." +
+                    " Use 'default' to load the builtin configuration," +
+                    " though it may not be of much help for your runtime environment",
       required = true,
-      validateWith = classOf[NotEmptyStringValidator]
+      validateWith = classOf[FileValidator]
     )
     val conf: String = null
-
-    @Parameter(
-      names = Array("-p"),
-      description = "Selects the profile from the configuration",
-      required = true,
-      validateWith = classOf[NotEmptyStringValidator]
-    )
-    val profile: String = null
-
-    @Parameter(
-      names = Array("-x"),
-      description = "Extra, overriding configuration that applies to the chosen profile. " +
-                    "You can provide the configuration inline or by giving a file path. " +
-                    "For the latter case, prepend an at sign '@'",
-      validateWith = classOf[NotEmptyStringValidator]
-    )
-    val xconf: String = null
   }
 
   object ParsedCmdLine {
@@ -71,9 +51,7 @@ object Args {
     val jc = new JCommander()
 
     jc.setProgramName(Main.getClass.getName.dropRight(1))
-
     jc.addObject(ParsedCmdLine.globalOptions)
-
     jc
   }
 

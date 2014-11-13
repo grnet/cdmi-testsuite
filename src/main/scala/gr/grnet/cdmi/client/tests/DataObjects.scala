@@ -20,126 +20,103 @@ package gr.grnet.cdmi.client.tests
 import java.util.UUID
 
 import com.typesafe.config.ConfigRenderOptions
-import gr.grnet.cdmi.client.testmodel.{HttpClient, TestCaseSkeleton, TestStep}
+import gr.grnet.cdmi.client.business.{Client, TestCaseSkeleton, TestStep}
 
 /**
  *
  */
-class DataObjects extends TestCaseSkeleton {
-  val randomFolder = UUID.randomUUID().toString + "/cdmi/"
+class DataObjects extends TestCaseSkeleton(false) {
+  val randomFolder   = UUID.randomUUID().toString + "/cdmi/"
   val randomSuffix01 = UUID.randomUUID().toString
   val randomSuffix02 = UUID.randomUUID().toString
 
-  val step01Name = s"PUT CDMI '${HttpClient.Content_Type}: ${HttpClient.Application_Cdmi_Object}'"
-  val step01 = TestStep(step01Name) { (config, client) ⇒
-    println("config = " + config.local.root().render())
+  val step01Name = s"PUT CDMI '${Client.Content_Type}: ${Client.Application_Cdmi_Object}'"
+  val step01 = TestStep(step01Name) { (client, conf) ⇒
 
-    val objectPath = getObjectPathPrefix(config) + randomFolder + randomSuffix01
-    val jsonBody   = getJsonBody(config)
+    val objectPath = getObjectPathPrefix(conf) + randomFolder + randomSuffix01
+    val jsonBody   = getJsonBody(conf)
     val json       = jsonBody.root().render(ConfigRenderOptions.concise().setFormatted(true))
 
-    val xAuthToken = getXAuthToken(config)
     val request = client(objectPath).
-      setXCdmiSpecificationVersion().
       contentTypeCdmiObject().
-      xAuthToken(xAuthToken).
+      applyHeaders(conf.`http-headers`).
       put(json)
 
     val response = client.execute(request)
     checkResponse(response, client, true)
   }
 
-  val step01_1_Name = s"GET CDMI '${HttpClient.Accept}: ${HttpClient.Application_Cdmi_Object}' returns '${HttpClient.Content_Type}: ${HttpClient.Application_Cdmi_Object}'"
-  val step01_1 = TestStep(step01_1_Name) { (config, client) ⇒
-    val objectPath = getObjectPathPrefix(config) + randomFolder + randomSuffix01
-    val xAuthToken = getXAuthToken(config)
+  val step01_1_Name = s"GET CDMI '${Client.Accept}: ${Client.Application_Cdmi_Object}' returns '${Client.Content_Type}: ${Client.Application_Cdmi_Object}'"
+  val step01_1 = TestStep(step01_1_Name) { (client, conf) ⇒
+    val objectPath = getObjectPathPrefix(conf) + randomFolder + randomSuffix01
     val request = client(objectPath).
-      setXCdmiSpecificationVersion().
       acceptCdmiObject().
-      xAuthToken(xAuthToken).
+      applyHeaders(conf.`http-headers`).
       get()
 
     val response = client.execute(request)
-    checkResponse(response, client, true, Some(HttpClient.Application_Cdmi_Object))
+    checkResponse(response, client, true, Some(Client.Application_Cdmi_Object))
   }
 
-  val step01_2_Name = s"GET CDMI '${HttpClient.Accept}: */*' returns '${HttpClient.Content_Type}: ${HttpClient.Application_Cdmi_Object}'"
-  val step01_2 = TestStep(step01_2_Name) { (config, client) ⇒
-    val objectPath = getObjectPathPrefix(config) + randomFolder + randomSuffix01
-    val xAuthToken = getXAuthToken(config)
+  val step01_2_Name = s"GET CDMI '${Client.Accept}: */*' returns '${Client.Content_Type}: ${Client.Application_Cdmi_Object}'"
+  val step01_2 = TestStep(step01_2_Name) { (client, conf) ⇒
+    val objectPath = getObjectPathPrefix(conf) + randomFolder + randomSuffix01
     val request = client(objectPath).
-      setXCdmiSpecificationVersion().
       acceptAny().
-      xAuthToken(xAuthToken).
+      applyHeaders(conf.`http-headers`).
       get()
 
     val response = client.execute(request)
-    checkResponse(response, client, true, Some(HttpClient.Application_Cdmi_Object))
+    checkResponse(response, client, true, Some(Client.Application_Cdmi_Object))
   }
 
-  val step01_3_Name = s"GET CDMI w/o '${HttpClient.Accept}' returns '${HttpClient.Content_Type}: ${HttpClient.Application_Cdmi_Object}'"
-  val step01_3 = TestStep(step01_3_Name) { (config, client) ⇒
-    val objectPath = getObjectPathPrefix(config) + randomFolder + randomSuffix01
-    val xAuthToken = getXAuthToken(config)
+  val step01_3_Name = s"GET CDMI w/o '${Client.Accept}' returns '${Client.Content_Type}: ${Client.Application_Cdmi_Object}'"
+  val step01_3 = TestStep(step01_3_Name) { (client, conf) ⇒
+    val objectPath = getObjectPathPrefix(conf) + randomFolder + randomSuffix01
     val request = client(objectPath).
-      setXCdmiSpecificationVersion().
-      xAuthToken(xAuthToken).
+      applyHeaders(conf.`http-headers`).
       get()
 
     val response = client.execute(request)
-    checkResponse(response, client, true, Some(HttpClient.Application_Cdmi_Object))
+    checkResponse(response, client, true, Some(Client.Application_Cdmi_Object))
   }
 
-  val step01_4_Name = s"GET CDMI w/o '${HttpClient.X_Auth_Token}' fails"
-  val step01_4 = TestStep(step01_4_Name) { (config, client) ⇒
-    val objectPath = getObjectPathPrefix(config) + randomFolder + randomSuffix01
-    val request = client(objectPath).
-      setXCdmiSpecificationVersion().
-      get()
-
-    val response = client.execute(request)
-    checkFailedResponse(response)
-  }
-
-  val step02Name = s"PUT non-CDMI '${HttpClient.Content_Type}: ${HttpClient.Text_Plain}'"
-  val step02 = TestStep(step02Name) { (config, client) ⇒
-    val objectPath = getObjectPathPrefix(config) + randomFolder + randomSuffix02
-    val text       = getJsonBody(config).getString("value")
-    val mimetype   = getJsonBody(config).getString("mimetype")
-    val xAuthToken = getXAuthToken(config)
+  val step02Name = s"PUT non-CDMI '${Client.Content_Type}: ${Client.Text_Plain}'"
+  val step02 = TestStep(step02Name) { (client, conf) ⇒
+    val objectPath = getObjectPathPrefix(conf) + randomFolder + randomSuffix02
+    val text       = getJsonBody(conf).getString("value")
+    val mimetype   = getJsonBody(conf).getString("mimetype")
 
     val request = client(objectPath).
       contentType(mimetype).
-      xAuthToken(xAuthToken).
+      applyHeaders(conf.`http-headers`).
       put(text)
 
     val response = client.execute(request)
     checkResponse(response, client, false)
   }
 
-  val step02_1_Name = s"GET non-CDMI '${HttpClient.Accept}: */*' returns exact '${HttpClient.Content_Type}'"
-  val step02_1 = TestStep(step02_1_Name) { (config, client) ⇒
-    val objectPath = getObjectPathPrefix(config) + randomFolder + randomSuffix02
-    val text       = getJsonBody(config).getString("value")
-    val mimetype   = getJsonBody(config).getString("mimetype")
-    val xAuthToken = getXAuthToken(config)
+  val step02_1_Name = s"GET non-CDMI '${Client.Accept}: */*' returns exact '${Client.Content_Type}'"
+  val step02_1 = TestStep(step02_1_Name) { (client, conf) ⇒
+    val objectPath = getObjectPathPrefix(conf) + randomFolder + randomSuffix02
+    val text       = getJsonBody(conf).getString("value")
+    val mimetype   = getJsonBody(conf).getString("mimetype")
     val request = client(objectPath).
       acceptAny().
-      xAuthToken(xAuthToken).
+      applyHeaders(conf.`http-headers`).
       get()
 
     val response = client.execute(request)
     checkResponse(response, client, true, Some(mimetype))
   }
 
-  val step02_2_Name = s"GET non-CDMI w/o '${HttpClient.Accept}' returns exact '${HttpClient.Content_Type}'"
-  val step02_2 = TestStep(step02_2_Name) { (config, client) ⇒
-    val objectPath = getObjectPathPrefix(config) + randomFolder + randomSuffix02
-    val text       = getJsonBody(config).getString("value")
-    val mimetype   = getJsonBody(config).getString("mimetype")
-    val xAuthToken = getXAuthToken(config)
+  val step02_2_Name = s"GET non-CDMI w/o '${Client.Accept}' returns exact '${Client.Content_Type}'"
+  val step02_2 = TestStep(step02_2_Name) { (client, conf) ⇒
+    val objectPath = getObjectPathPrefix(conf) + randomFolder + randomSuffix02
+    val text       = getJsonBody(conf).getString("value")
+    val mimetype   = getJsonBody(conf).getString("mimetype")
     val request = client(objectPath).
-      xAuthToken(xAuthToken).
+      applyHeaders(conf.`http-headers`).
       get()
 
     val response = client.execute(request)
@@ -147,7 +124,7 @@ class DataObjects extends TestCaseSkeleton {
   }
 
   def steps: List[TestStep] = List(
-    step01, step01_1, step01_2, step01_3, step01_4,
+    step01, step01_1, step01_2, step01_3,
     step02, step02_1, step02_2
   )
 }

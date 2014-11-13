@@ -1,3 +1,5 @@
 .idea/
 target/
 *.iml
+pithosj-reference.conf
+__gitstats/

@@ -20,14 +20,14 @@ package gr.grnet.cdmi.client.tests
 import com.squareup.okhttp.{Request, Response}
 import com.typesafe.config.ConfigFactory
 import gr.grnet.cdmi.Capabilities
-import gr.grnet.cdmi.client.testmodel.{HttpClient, TestCaseSkeleton, TestStep}
+import gr.grnet.cdmi.client.business.{Client, TestCaseSkeleton, TestStep}
 
 import scala.collection.JavaConverters._
 
 /**
  * 
  */
-class RootCapabilityObject extends TestCaseSkeleton {
+class RootCapabilityObject extends TestCaseSkeleton(false) {
   def checkCapabilities(response: Response): Unit = {
     val bodyString = response.body().string()
     val bodyConfig = ConfigFactory.parseString(bodyString)
@@ -43,50 +43,52 @@ class RootCapabilityObject extends TestCaseSkeleton {
     }
   }
 
-  def allChecks(request: Request, client: HttpClient) {
+  def allChecks(request: Request, client: Client) {
     val response = client.execute(request)
-    checkResponse(response, client, true, Some(HttpClient.Application_Cdmi_Capability))
+    checkResponse(response, client, true, Some(Client.Application_Cdmi_Capability))
     checkCapabilities(response)
   }
 
 
-  val step01Name = s"Get capabilities with '${HttpClient.X_CDMI_Specification_Version}', no 'Accept'"
-  val step01 = TestStep(step01Name) { (config, client) ⇒
+  val step01Name = s"Get capabilities with '${Client.X_CDMI_Specification_Version}', no 'Accept'"
+  val step01 = TestStep(step01Name) { (client, conf) ⇒
     val request = client("/cdmi_capabilities/").
-      setXCdmiSpecificationVersion().
+      applyHeaders(conf.`http-headers`).
       get()
 
     allChecks(request, client)
   }
 
-  val step02Name = s"Get capabilities with '${HttpClient.X_CDMI_Specification_Version}' and 'Accept: ${HttpClient.Application_Cdmi_Capability}'"
-  val step02 = TestStep(step02Name) { (config, client) ⇒
+  val step02Name = s"Get capabilities with '${Client.X_CDMI_Specification_Version}' and 'Accept: ${Client.Application_Cdmi_Capability}'"
+  val step02 = TestStep(step02Name) { (client, conf) ⇒
     val request = client("/cdmi_capabilities/").
-      setXCdmiSpecificationVersion(). // 12.2.3 mandatory
+//      setXCdmiSpecificationVersion(). // 12.2.3 mandatory
       acceptCdmiCapability().
+      applyHeaders(conf.`http-headers`).
       get()
 
     allChecks(request, client)
   }
 
-  val step03Name = s"Get capabilities with '${HttpClient.X_CDMI_Specification_Version}' and 'Accept: */*'"
-  val step03 = TestStep(step03Name) { (config, client) ⇒
+  val step03Name = s"Get capabilities with '${Client.X_CDMI_Specification_Version}' and 'Accept: */*'"
+  val step03 = TestStep(step03Name) { (client, conf) ⇒
     val request = client("/cdmi_capabilities/").
-      setXCdmiSpecificationVersion(). // 12.2.3 mandatory
+//      setXCdmiSpecificationVersion(). // 12.2.3 mandatory
       acceptAny().
+      applyHeaders(conf.`http-headers`).
       get()
 
     allChecks(request, client)
   }
 
-  val step04Name = s"Get capabilities w/o '${HttpClient.X_CDMI_Specification_Version}'"
-  val step04 = TestStep(step04Name) { (config, client) ⇒
+  val step04Name = s"Get capabilities w/o '${Client.X_CDMI_Specification_Version}'"
+  val step04 = TestStep(step04Name) { (client, conf) ⇒
     val request = client.
       apply("/cdmi_capabilities/").
       get()
 
     val response = client.execute(request)
-    checkResponse(response, client, false, Some(HttpClient.Application_Cdmi_Capability))
+    checkResponse(response, client, false, Some(Client.Application_Cdmi_Capability))
   }
 
   def steps: List[TestStep] = List(step01, step02, step03, step04)

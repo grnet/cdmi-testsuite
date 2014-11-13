@@ -15,11 +15,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package gr.grnet.cdmi.client
+package gr.grnet.cdmi.client.cmdline
+
+import java.io.File
+
+import com.beust.jcommander.{ParameterException, IParameterValidator}
 
 /**
  *
  */
-class Util {
+class FileValidator extends IParameterValidator {
+  def validate(name: String, value: String): Unit = {
+    NotEmptyStringValidator.validate(name, value)
 
+    val file = new File(value)
+    if(!file.isFile) {
+      throw new ParameterException(s"'$value' is not a file")
+    }
+    if(file.length() == 0) {
+      throw new ParameterException(s"'$value' is an empty file")
+    }
+  }
 }

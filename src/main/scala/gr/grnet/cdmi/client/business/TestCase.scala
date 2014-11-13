@@ -16,31 +16,34 @@
  */
 
 package gr.grnet.cdmi.client
-package testmodel
+package business
+
+import gr.grnet.cdmi.client.conf.TestConf
 
 import scala.annotation.tailrec
 
 trait TestCase {
+  // If this is true, then subsequent test cases are not tried
+  def fatalOnError: Boolean
+
   def steps: List[TestStep]
 
   def id = getClass.getName
+
   def description = {
     val name = this.getClass.getName
     val i = name.lastIndexOf('.')
     name.substring(i + 1)
   }
 
-  def apply(
-    config: TestConfig,
-    clientFactory: () ⇒ HttpClient
-  ): TestCaseResult = {
-    lazy val client = clientFactory.apply()
+  def apply(): TestCaseResult = apply(null, null)
 
+  def apply(client: Client, conf: TestConf): TestCaseResult = {
     def LOG(s: String): Unit = System.out.println(s)
 
     def applyStep(step: TestStep): Option[Throwable] =
       try {
-        step.apply(config, client)
+        step(client, conf)
         None
       }
       catch {
