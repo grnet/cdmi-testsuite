@@ -57,6 +57,7 @@ case class Client(fullConf: FullConf, ok: OkHttpClient) {
     def xAuthToken(token: String) = header(Client.X_Auth_Token, token)
 
     def get   (): Request                  = okBuilder.get().build()
+    def head  (): Request                  = okBuilder.head().build()
     def put   (body: RequestBody): Request = okBuilder.put(body).build()
     def post  (body: RequestBody): Request = okBuilder.post(body).build()
     def delete(): Request                  = okBuilder.delete().build()
