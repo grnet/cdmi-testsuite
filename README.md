@@ -53,6 +53,6 @@ Usage: gr.grnet.cdmi.client.Main [options]
        Default: false
   * -c
        The configuration file the application uses. Use 'default' to load the
-       builtin configuration, though it may not be of much help for your runtime
-       environment
+       builtin configuration, though it may not be of much help for the target CDMI
+       server.
 ```
