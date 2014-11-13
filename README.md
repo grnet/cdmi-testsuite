@@ -46,8 +46,6 @@ The test suite is meant to be configurable. See [reference.conf](https://github.
 ## Usage
 
 ```
-$ java -jar cdmi-testsuite.jar -h
-
 Usage: gr.grnet.cdmi.client.Main [options]
   Options:
     -h, -help, --help
@@ -55,11 +53,6 @@ Usage: gr.grnet.cdmi.client.Main [options]
        Default: false
   * -c
        The configuration file the application uses. Use 'default' to load the
-       builtin configuration
-       Default: default
-  * -p
-       Selects the profile
-       Default: default
-  * -x
-       Extra, overriding configuration that applies to the chosen profile
+       builtin configuration, though it may not be of much help for your runtime
+       environment
 ```

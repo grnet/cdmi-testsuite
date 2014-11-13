@@ -35,7 +35,7 @@ object Args {
       names = Array("-c"),
       description = "The configuration file the application uses." +
                     " Use 'default' to load the builtin configuration," +
-                    " though it may not be of much help for your runtime environment",
+                    " though it may not be of much help for the target CDMI server.",
       required = true,
       validateWith = classOf[FileValidator]
     )
