@@ -27,7 +27,7 @@ import scala.collection.JavaConverters._
 /**
  * 
  */
-class RootCapabilityObject extends TestCaseSkeleton {
+class RootCapabilityObject extends TestCaseSkeleton(false) {
   def checkCapabilities(response: Response): Unit = {
     val bodyString = response.body().string()
     val bodyConfig = ConfigFactory.parseString(bodyString)

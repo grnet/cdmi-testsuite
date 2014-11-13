@@ -70,7 +70,7 @@ object Main {
           config
       }
 
-    object MasterConfCheck extends TestCaseSkeleton {
+    object MasterConfCheck extends TestCaseSkeleton(true) {
       override def description: String = s"Master configuration exists"
       def steps = List(TestStep.effect("Check provided configuration")(cConfigF()))
     }
@@ -85,7 +85,7 @@ object Main {
 
     val testConfs = fullConf.tests
 
-    object ClassTestsCheck extends TestCaseSkeleton {
+    object ClassTestsCheck extends TestCaseSkeleton(true) {
       override def description = s"Check availability of classes from `${Key.tests}`"
       val stepsF = () ⇒
         for {

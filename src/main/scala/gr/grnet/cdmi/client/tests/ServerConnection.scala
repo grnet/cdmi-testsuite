@@ -22,7 +22,7 @@ import gr.grnet.cdmi.client.business.{TestCaseSkeleton, TestStep}
 /**
  *
  */
-class ServerConnection extends TestCaseSkeleton {
+class ServerConnection extends TestCaseSkeleton(true) {
   val step01 = TestStep("Ping Server") { (client, conf) ⇒
     val request = client("/cdmi_capabilities/").get()
     val _ = client.execute(request)

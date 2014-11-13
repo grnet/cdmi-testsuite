@@ -22,6 +22,6 @@ import gr.grnet.cdmi.client.business.{TestStep, TestCaseSkeleton}
 /**
  *
  */
-class Containers extends TestCaseSkeleton {
+class Containers extends TestCaseSkeleton(false) {
   def steps: List[TestStep] = Nil
 }

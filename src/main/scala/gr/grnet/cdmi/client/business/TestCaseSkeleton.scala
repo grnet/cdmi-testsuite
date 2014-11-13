@@ -24,7 +24,7 @@ import gr.grnet.cdmi.client.conf.TestConf
 /**
  *
  */
-trait TestCaseSkeleton extends TestCase {
+abstract class TestCaseSkeleton(val fatalOnError: Boolean) extends TestCase {
   def checkFailedResponse(response: Response): Unit = {
     val code = response.code()
     val message = response.message()

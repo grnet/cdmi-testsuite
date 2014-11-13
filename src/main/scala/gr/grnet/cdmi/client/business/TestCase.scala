@@ -23,6 +23,9 @@ import gr.grnet.cdmi.client.conf.TestConf
 import scala.annotation.tailrec
 
 trait TestCase {
+  // If this is true, then subsequent test cases are not tried
+  def fatalOnError: Boolean
+
   def steps: List[TestStep]
 
   def id = getClass.getName

@@ -25,7 +25,7 @@ import gr.grnet.cdmi.client.business.{Client, TestCaseSkeleton, TestStep}
 /**
  *
  */
-class DataObjects extends TestCaseSkeleton {
+class DataObjects extends TestCaseSkeleton(false) {
   val randomFolder   = UUID.randomUUID().toString + "/cdmi/"
   val randomSuffix01 = UUID.randomUUID().toString
   val randomSuffix02 = UUID.randomUUID().toString
