@@ -25,6 +25,15 @@ import gr.grnet.cdmi.client.conf.TestConf
  *
  */
 abstract class TestCaseSkeleton(val fatalOnError: Boolean) extends TestCase {
+  def checkNot500(response: Response): Unit = {
+    val code = response.code()
+    val message = response.message()
+    val body = response.body().string()
+    val is500 = code >= 500 && code < 600
+
+    assert(!is500, s"!is500 [$code|$message|$body]")
+  }
+
   def checkFailedResponse(response: Response): Unit = {
     val code = response.code()
     val message = response.message()
