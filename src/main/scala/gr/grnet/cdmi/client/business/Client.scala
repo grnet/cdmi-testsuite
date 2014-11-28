@@ -58,6 +58,7 @@ case class Client(fullConf: FullConf, ok: OkHttpClient) {
 
     def contentType(mime: String) = header(Content_Type, mime)
     def contentTypeCdmiObject()   = contentType(Application_Cdmi_Object)
+    def contentTypeCdmiContainer() = contentType(Application_Cdmi_Container)
 
     def xAuthToken(token: String) = header(Client.X_Auth_Token, token)
 
@@ -69,6 +70,15 @@ case class Client(fullConf: FullConf, ok: OkHttpClient) {
 
     def put (mediaType: String, body: String): Request = put(RequestBody.create(MediaType.parse(mediaType), body))
     def post(mediaType: String, body: String): Request = post(RequestBody.create(MediaType.parse(mediaType), body))
+
+    def put(): Request =
+      _contentType match {
+        case null ⇒
+          throw new Exception(s"No ${Client.Content_Type} given for PUT")
+
+        case _ ⇒
+          put(RequestBody.create(MediaType.parse(_contentType), Array[Byte]()))
+      }
 
     def put(body: String): Request =
       _contentType match {

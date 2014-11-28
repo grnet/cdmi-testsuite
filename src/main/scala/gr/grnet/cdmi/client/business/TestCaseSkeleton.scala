@@ -27,9 +27,11 @@ import gr.grnet.cdmi.client.conf.TestConf
  *
  */
 abstract class TestCaseSkeleton(val fatalOnError: Boolean) extends TestCase {
-  val randomFolder   = UUID.randomUUID().toString + "/cdmi/"
-  val randomSuffix01 = UUID.randomUUID().toString
-  val randomSuffix02 = UUID.randomUUID().toString
+  val randomFolder = UUID.randomUUID().toString + "/cdmi/"
+  val randomObjectSuffix01 = UUID.randomUUID().toString
+  val randomObjectSuffix02 = UUID.randomUUID().toString
+  val randomContainerSuffix01 = UUID.randomUUID().toString + "/"
+  val randomContainerSuffix02 = UUID.randomUUID().toString + "/"
 
   def checkNot500(response: Response): Unit = {
     val code = response.code()
@@ -87,19 +89,32 @@ abstract class TestCaseSkeleton(val fatalOnError: Boolean) extends TestCase {
   }
 
   def getObjectPathPrefix(conf: TestConf): String = {
-    val path = "object-path-prefix"
     val specific = conf.specific
-
+    val path = "object-path-prefix"
     val objectPathPrefix = specific.getString(path)
 
     assert(objectPathPrefix.startsWith("/"), s"objectPathPrefix [=$objectPathPrefix] starts with '/'")
-    assert(objectPathPrefix.endsWith("/"), s"objectPathPrefix [=$objectPathPrefix] ends with '/'")
+    assert(objectPathPrefix.endsWith("/")  , s"objectPathPrefix [=$objectPathPrefix] ends with '/'"  )
 
     objectPathPrefix
   }
 
-  def getRandomTestObjectPath01(conf: TestConf): String = getObjectPathPrefix(conf) + randomFolder + randomSuffix01
-  def getRandomTestObjectPath02(conf: TestConf): String = getObjectPathPrefix(conf) + randomFolder + randomSuffix02
+  def getRandomTestObjectPath01(conf: TestConf): String = getObjectPathPrefix(conf) + randomFolder + randomObjectSuffix01
+  def getRandomTestObjectPath02(conf: TestConf): String = getObjectPathPrefix(conf) + randomFolder + randomObjectSuffix02
+
+  def getContainerPathPrefix(conf: TestConf): String = {
+    val specific = conf.specific
+    val path = "container-path-prefix"
+    val containerPathPrefix = specific.getString(path)
+
+    assert(containerPathPrefix.startsWith("/"), s"containerPathPrefix [=$containerPathPrefix] starts with '/'")
+    assert(containerPathPrefix.endsWith("/")  , s"containerPathPrefix [=$containerPathPrefix] ends with '/'"  )
+
+    containerPathPrefix
+  }
+
+  def getRandomContainerPath01(conf: TestConf): String = getContainerPathPrefix(conf) + randomFolder + randomContainerSuffix01
+  def getRandomContainerPath02(conf: TestConf): String = getContainerPathPrefix(conf) + randomFolder + randomContainerSuffix02
 
   def getJsonBody(conf: TestConf): Config = {
     val path = "json-body"

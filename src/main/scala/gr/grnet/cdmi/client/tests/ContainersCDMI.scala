@@ -17,14 +17,26 @@
 
 package gr.grnet.cdmi.client.tests
 
-import gr.grnet.cdmi.client.business.{TestStep, TestCaseSkeleton}
+import gr.grnet.cdmi.client.business.{Client, TestStep, TestCaseSkeleton}
 
 /**
  *
  */
-class Containers extends TestCaseSkeleton(false) {
+class ContainersCDMI extends TestCaseSkeleton(false) {
+
+  val step01Name = s"PUT CDMI '${Client.Content_Type}: ${Client.Application_Cdmi_Container}'"
+  val step01 = TestStep(step01Name) { (client, conf) ⇒
+    val containerPath = getRandomContainerPath01(conf)
+
+    val request = client(containerPath).
+      applyHeaders(conf.`http-headers`).
+      contentTypeCdmiContainer().
+      put()
+
+    val response = client.execute(request)
+    checkResponse(response, client, true, Some(Client.Application_Cdmi_Container))
+  }
 
 
-
-  def steps: List[TestStep] = Nil
+  def steps: List[TestStep] = List(step01)
 }
