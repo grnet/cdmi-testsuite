@@ -7,7 +7,7 @@ This is a CDMI test suite, currently targeting [GRNET's CDMI implementation](htt
 
 The test suite is meant to be configurable. See [reference.conf](https://github.com/grnet/cdmi-testsuite/blob/master/src/main/resources/reference.conf)
 
-[Currently](https://github.com/grnet/cdmi-testsuite/commit/e31137b127581d5e763976b03bf12eaaf5658a21) a successful run looks like this:
+[Currently](https://github.com/grnet/cdmi-testsuite/commit/a02b9921554582224b1eab549039b0c7f6be8c9b) a successful run looks like this:
 
 ```
 +Master configuration exists [gr.grnet.cdmi.client.Main$MasterConfCheck$2$]
