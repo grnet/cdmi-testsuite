@@ -62,7 +62,6 @@ class RootCapabilityObject extends TestCaseSkeleton(false) {
   val step02Name = s"Get capabilities with '${Client.X_CDMI_Specification_Version}' and 'Accept: ${Client.Application_Cdmi_Capability}'"
   val step02 = TestStep(step02Name) { (client, conf) ⇒
     val request = client("/cdmi_capabilities/").
-//      setXCdmiSpecificationVersion(). // 12.2.3 mandatory
       acceptCdmiCapability().
       applyHeaders(conf.`http-headers`).
       get()
@@ -73,7 +72,6 @@ class RootCapabilityObject extends TestCaseSkeleton(false) {
   val step03Name = s"Get capabilities with '${Client.X_CDMI_Specification_Version}' and 'Accept: */*'"
   val step03 = TestStep(step03Name) { (client, conf) ⇒
     val request = client("/cdmi_capabilities/").
-//      setXCdmiSpecificationVersion(). // 12.2.3 mandatory
       acceptAny().
       applyHeaders(conf.`http-headers`).
       get()

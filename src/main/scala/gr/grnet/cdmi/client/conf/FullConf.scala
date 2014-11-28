@@ -28,8 +28,6 @@ import scala.collection.JavaConverters._
 case class FullConf(
   `cdmi-spec-version`: String,
   `cdmi-header`: Header,
-//  `std-headers`: List[Header],
-//  `extra-headers`: List[Header],
   `all-headers`: List[Header],
   `root-uri`: URI,
   tests: List[TestConf]
@@ -39,8 +37,6 @@ object FullConf {
   def parse(config: Config): FullConf = {
     val `cdmi-spec-version` = config.getString(Key.`cdmi-spec-version`)
     val `cdmi-header` = parseHeader(config.getConfig(Key.`cdmi-header`))
-//    val `std-headers` = config.getConfigList(Key.`std-headers`).asScala.toList.map(parseHeader)
-//    val `extra-headers` = config.getConfigList(Key.`extra-headers`).asScala.toList.map(parseHeader)
     val `all-headers` = config.getConfigList(Key.`all-headers`).asScala.toList.map(parseHeader)
     val `root-uri` = new URI(config.getString(Key.`root-uri`))
     val tests = TestConf.parseTests(config)
@@ -48,8 +44,6 @@ object FullConf {
     val fullConf = FullConf(
       `cdmi-spec-version`,
       `cdmi-header`,
-//      `std-headers`,
-//      `extra-headers`,
       `all-headers`,
       `root-uri`,
       tests
