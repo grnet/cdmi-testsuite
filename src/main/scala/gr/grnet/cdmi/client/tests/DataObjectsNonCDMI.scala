@@ -70,5 +70,17 @@ class DataObjectsNonCDMI extends TestCaseSkeleton(false) {
     checkResponse(response, client, true, Some(mimetype))
   }
 
-  def steps: List[TestStep] = List(step01, step01_1, step01_2)
+  val step01_3_Name = s"DELETE non-CDMI"
+  val step01_3 = TestStep(step01_3_Name) { (client, conf) ⇒
+    val objectPath = getRandomTestObjectPath02(conf)
+    val request = client(objectPath).
+      applyHeaders(conf.`http-headers`).
+      clearHeader(Client.X_CDMI_Specification_Version). // spec version must not be present for non-CDMI call
+      delete()
+
+    val response = client.execute(request)
+    checkResponse(response, client, true, None)
+  }
+
+  def steps: List[TestStep] = List(step01, step01_1, step01_2, step01_3)
 }
