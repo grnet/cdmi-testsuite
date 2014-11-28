@@ -28,10 +28,9 @@ import scala.collection.JavaConverters._
  * 
  */
 class RootCapabilityObject extends TestCaseSkeleton(false) {
-  def checkCapabilities(response: Response): Unit = {
-    val bodyString = response.body().string()
-    val bodyConfig = ConfigFactory.parseString(bodyString)
-    assert(bodyConfig.hasPath("capabilities"), "'capabilities' field exists in the returned JSON")
+  def checkCapabilities(responseBody: String): Unit = {
+    val bodyConfig = ConfigFactory.parseString(responseBody)
+    assertJsonPath(bodyConfig, "capabilities")
 
     val capabilitiesConfig = bodyConfig.getConfig("capabilities")
     val capabilities = capabilitiesConfig.entrySet().asScala.map(_.getKey)
@@ -45,8 +44,8 @@ class RootCapabilityObject extends TestCaseSkeleton(false) {
 
   def allChecks(request: Request, client: Client) {
     val response = client.execute(request)
-    checkResponse(response, client, true, Some(Client.Application_Cdmi_Capability))
-    checkCapabilities(response)
+    val responseBody = checkResponse(response, client, true, Some(Client.Application_Cdmi_Capability))
+    checkCapabilities(responseBody)
   }
 
 

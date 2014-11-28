@@ -7,7 +7,7 @@ This is a CDMI test suite, currently targeting [GRNET's CDMI implementation](htt
 
 The test suite is meant to be configurable. See [reference.conf](https://github.com/grnet/cdmi-testsuite/blob/master/src/main/resources/reference.conf)
 
-[Currently](https://github.com/grnet/cdmi-testsuite/commit/a02b9921554582224b1eab549039b0c7f6be8c9b) a successful run looks like this:
+A successful run looks like this:
 
 ```
 +Master configuration exists [gr.grnet.cdmi.client.Main$MasterConfCheck$2$]
@@ -24,8 +24,11 @@ The test suite is meant to be configurable. See [reference.conf](https://github.
   OK [Ping Server]
 -OK ServerConnection [gr.grnet.cdmi.client.tests.ServerConnection]
 +RootCapabilityObject [gr.grnet.cdmi.client.tests.RootCapabilityObject]
-  KO [Get capabilities with 'X-CDMI-Specification-Version', no 'Accept'] (⇒ closed)
--KO RootCapabilityObject [gr.grnet.cdmi.client.tests.RootCapabilityObject]
+  OK [Get capabilities with 'X-CDMI-Specification-Version', no 'Accept']
+  OK [Get capabilities with 'X-CDMI-Specification-Version' and 'Accept: application/cdmi-capability']
+  OK [Get capabilities with 'X-CDMI-Specification-Version' and 'Accept: */*']
+  OK [Get capabilities w/o 'X-CDMI-Specification-Version']
+-OK RootCapabilityObject [gr.grnet.cdmi.client.tests.RootCapabilityObject]
 +DataObjectsCDMI [gr.grnet.cdmi.client.tests.DataObjectsCDMI]
   OK [PUT CDMI 'Content-Type: application/cdmi-object']
   OK [GET CDMI 'Accept: application/cdmi-object' returns 'Content-Type: application/cdmi-object']

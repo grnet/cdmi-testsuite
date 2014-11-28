@@ -33,6 +33,18 @@ abstract class TestCaseSkeleton(val fatalOnError: Boolean) extends TestCase {
   val randomContainerSuffix01 = UUID.randomUUID().toString + "/"
   val randomContainerSuffix02 = UUID.randomUUID().toString + "/"
 
+  def assertJsonPath(config: Config, path: String): Unit =
+    assert(config.hasPath(path), s"'$path' exists in the returned JSON")
+
+  def assertJsonPaths(config: Config, paths: String*): Unit =
+    for(path ← paths) assertJsonPath(config, path)
+
+  def assertJsonPathAndValue(config: Config, path: String, value: String): Unit = {
+    assertJsonPath(config, path)
+    val foundValue = config.getString(path)
+    assert(foundValue == value, s"'$path: $foundValue' instead of '$value' in the returned JSON")
+  }
+
   def checkNot500(response: Response): Unit = {
     val code = response.code()
     val message = response.message()
@@ -54,7 +66,7 @@ abstract class TestCaseSkeleton(val fatalOnError: Boolean) extends TestCase {
     client: Client,
     checkSpecHeader: Boolean,
     checkContentTypeOpt: Option[String] = None
-  ): Unit = {
+  ): String = {
     val code = response.code()
     val message = response.message()
     val body = response.body().string()
@@ -76,6 +88,8 @@ abstract class TestCaseSkeleton(val fatalOnError: Boolean) extends TestCase {
         val typeSubtype =  mediaType.`type`() + "/" + mediaType.subtype()
         assert(typeSubtype == expectedTypeSubtype, s"contentType [=$typeSubtype] == expectedContentType [=$expectedTypeSubtype]")
     }
+
+    body
   }
 
   def checkResponseX(
@@ -83,9 +97,9 @@ abstract class TestCaseSkeleton(val fatalOnError: Boolean) extends TestCase {
     client: Client,
     checkSpecHeader: Boolean,
     checkContentTypeOpt: Option[String] = None
-  )(extra: ⇒ Unit): Unit = {
-    checkResponse(response, client, checkSpecHeader, checkContentTypeOpt = checkContentTypeOpt)
-    extra
+  )(extraBodyCheck: (String) ⇒ Unit): Unit = {
+    val body = checkResponse(response, client, checkSpecHeader, checkContentTypeOpt = checkContentTypeOpt)
+    extraBodyCheck(body)
   }
 
   def getObjectPathPrefix(conf: TestConf): String = {

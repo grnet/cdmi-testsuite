@@ -17,6 +17,7 @@
 
 package gr.grnet.cdmi.client.tests
 
+import com.typesafe.config.ConfigFactory
 import gr.grnet.cdmi.client.business.{Client, TestStep, TestCaseSkeleton}
 
 /**
@@ -34,7 +35,26 @@ class ContainersCDMI_I extends TestCaseSkeleton(false) {
       put()
 
     val response = client.execute(request)
-    checkResponse(response, client, true, Some(Client.Application_Cdmi_Container))
+
+    checkResponseX(response, client, true, Some(Client.Application_Cdmi_Container)) { bodyString ⇒
+      val bodyConfig = ConfigFactory.parseString(bodyString)
+
+      // Check mandatory fields in the JSON response
+      // CDMI/1.0.2 Section 9.2.7 Table 35
+      assertJsonPathAndValue(bodyConfig, "objectType", Client.Application_Cdmi_Container)
+      assertJsonPaths(bodyConfig,
+        "objectID",
+        "objectName",
+        "parentURI",
+        "parentID",
+        "domainURI",
+        "capabilitiesURI",
+        "completionStatus",
+        "metadata",
+        "childrenrange",
+        "children"
+      )
+    }
   }
 
   val step02_1_Name = s"GET CDMI w/ '${Client.Accept}: ${Client.Application_Cdmi_Container}'"
