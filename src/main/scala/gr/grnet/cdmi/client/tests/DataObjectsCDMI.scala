@@ -23,7 +23,7 @@ import gr.grnet.cdmi.client.business.{Client, TestCaseSkeleton, TestStep}
 /**
  *
  */
-class DataObjects extends TestCaseSkeleton(false) {
+class DataObjectsCDMI extends TestCaseSkeleton(false) {
   val step01Name = s"PUT CDMI '${Client.Content_Type}: ${Client.Application_Cdmi_Object}'"
   val step01 = TestStep(step01Name) { (client, conf) ⇒
 
@@ -75,55 +75,5 @@ class DataObjects extends TestCaseSkeleton(false) {
     checkResponse(response, client, true, Some(Client.Application_Cdmi_Object))
   }
 
-  val step02Name = s"PUT non-CDMI '${Client.Content_Type}: ${Client.Text_Plain}'"
-  val step02 = TestStep(step02Name) { (client, conf) ⇒
-    val objectPath = getRandomTestObjectPath02(conf)
-    val text       = getJsonBody(conf).getString("value")
-    val mimetype   = getJsonBody(conf).getString("mimetype")
-
-    val headers = conf.`http-headers`
-    val request = client(objectPath).
-      contentType(mimetype).
-      applyHeaders(headers).
-      clearHeader(Client.X_CDMI_Specification_Version). // spec version must not be present for non-CDMI call
-      contentType(mimetype).
-      put(text)
-
-    val response = client.execute(request)
-    checkResponse(response, client, false)
-  }
-
-  val step02_1_Name = s"GET non-CDMI '${Client.Accept}: */*' returns exact '${Client.Content_Type}'"
-  val step02_1 = TestStep(step02_1_Name) { (client, conf) ⇒
-    val objectPath = getRandomTestObjectPath02(conf)
-    val text       = getJsonBody(conf).getString("value")
-    val mimetype   = getJsonBody(conf).getString("mimetype")
-    val request = client(objectPath).
-      acceptAny().
-      applyHeaders(conf.`http-headers`).
-      clearHeader(Client.X_CDMI_Specification_Version). // spec version must not be present for non-CDMI call
-      get()
-
-    val response = client.execute(request)
-    checkResponse(response, client, true, Some(mimetype))
-  }
-
-  val step02_2_Name = s"GET non-CDMI w/o '${Client.Accept}' returns exact '${Client.Content_Type}'"
-  val step02_2 = TestStep(step02_2_Name) { (client, conf) ⇒
-    val objectPath = getRandomTestObjectPath02(conf)
-    val text       = getJsonBody(conf).getString("value")
-    val mimetype   = getJsonBody(conf).getString("mimetype")
-    val request = client(objectPath).
-      applyHeaders(conf.`http-headers`).
-      clearHeader(Client.X_CDMI_Specification_Version). // spec version must not be present for non-CDMI call
-      get()
-
-    val response = client.execute(request)
-    checkResponse(response, client, true, Some(mimetype))
-  }
-
-  def steps: List[TestStep] = List(
-    step01, step01_1, step01_2, step01_3,
-    step02, step02_1, step02_2
-  )
+  def steps: List[TestStep] = List(step01, step01_1, step01_2, step01_3)
 }
