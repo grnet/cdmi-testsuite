@@ -17,8 +17,6 @@
 
 package gr.grnet.cdmi.client.tests
 
-import java.util.UUID
-
 import com.typesafe.config.ConfigRenderOptions
 import gr.grnet.cdmi.client.business.{Client, TestCaseSkeleton, TestStep}
 
@@ -26,14 +24,10 @@ import gr.grnet.cdmi.client.business.{Client, TestCaseSkeleton, TestStep}
  *
  */
 class DataObjects extends TestCaseSkeleton(false) {
-  val randomFolder   = UUID.randomUUID().toString + "/cdmi/"
-  val randomSuffix01 = UUID.randomUUID().toString
-  val randomSuffix02 = UUID.randomUUID().toString
-
   val step01Name = s"PUT CDMI '${Client.Content_Type}: ${Client.Application_Cdmi_Object}'"
   val step01 = TestStep(step01Name) { (client, conf) ⇒
 
-    val objectPath = getObjectPathPrefix(conf) + randomFolder + randomSuffix01
+    val objectPath = getRandomTestObjectPath01(conf)
     val jsonBody   = getJsonBody(conf)
     val json       = jsonBody.root().render(ConfigRenderOptions.concise().setFormatted(true))
 
@@ -48,7 +42,7 @@ class DataObjects extends TestCaseSkeleton(false) {
 
   val step01_1_Name = s"GET CDMI '${Client.Accept}: ${Client.Application_Cdmi_Object}' returns '${Client.Content_Type}: ${Client.Application_Cdmi_Object}'"
   val step01_1 = TestStep(step01_1_Name) { (client, conf) ⇒
-    val objectPath = getObjectPathPrefix(conf) + randomFolder + randomSuffix01
+    val objectPath = getRandomTestObjectPath01(conf)
     val request = client(objectPath).
       acceptCdmiObject().
       applyHeaders(conf.`http-headers`).
@@ -60,7 +54,7 @@ class DataObjects extends TestCaseSkeleton(false) {
 
   val step01_2_Name = s"GET CDMI '${Client.Accept}: */*' returns '${Client.Content_Type}: ${Client.Application_Cdmi_Object}'"
   val step01_2 = TestStep(step01_2_Name) { (client, conf) ⇒
-    val objectPath = getObjectPathPrefix(conf) + randomFolder + randomSuffix01
+    val objectPath = getRandomTestObjectPath01(conf)
     val request = client(objectPath).
       acceptAny().
       applyHeaders(conf.`http-headers`).
@@ -72,7 +66,7 @@ class DataObjects extends TestCaseSkeleton(false) {
 
   val step01_3_Name = s"GET CDMI w/o '${Client.Accept}' returns '${Client.Content_Type}: ${Client.Application_Cdmi_Object}'"
   val step01_3 = TestStep(step01_3_Name) { (client, conf) ⇒
-    val objectPath = getObjectPathPrefix(conf) + randomFolder + randomSuffix01
+    val objectPath = getRandomTestObjectPath01(conf)
     val request = client(objectPath).
       applyHeaders(conf.`http-headers`).
       get()
@@ -83,7 +77,7 @@ class DataObjects extends TestCaseSkeleton(false) {
 
   val step02Name = s"PUT non-CDMI '${Client.Content_Type}: ${Client.Text_Plain}'"
   val step02 = TestStep(step02Name) { (client, conf) ⇒
-    val objectPath = getObjectPathPrefix(conf) + randomFolder + randomSuffix02
+    val objectPath = getRandomTestObjectPath02(conf)
     val text       = getJsonBody(conf).getString("value")
     val mimetype   = getJsonBody(conf).getString("mimetype")
 
@@ -101,7 +95,7 @@ class DataObjects extends TestCaseSkeleton(false) {
 
   val step02_1_Name = s"GET non-CDMI '${Client.Accept}: */*' returns exact '${Client.Content_Type}'"
   val step02_1 = TestStep(step02_1_Name) { (client, conf) ⇒
-    val objectPath = getObjectPathPrefix(conf) + randomFolder + randomSuffix02
+    val objectPath = getRandomTestObjectPath02(conf)
     val text       = getJsonBody(conf).getString("value")
     val mimetype   = getJsonBody(conf).getString("mimetype")
     val request = client(objectPath).
@@ -116,7 +110,7 @@ class DataObjects extends TestCaseSkeleton(false) {
 
   val step02_2_Name = s"GET non-CDMI w/o '${Client.Accept}' returns exact '${Client.Content_Type}'"
   val step02_2 = TestStep(step02_2_Name) { (client, conf) ⇒
-    val objectPath = getObjectPathPrefix(conf) + randomFolder + randomSuffix02
+    val objectPath = getRandomTestObjectPath02(conf)
     val text       = getJsonBody(conf).getString("value")
     val mimetype   = getJsonBody(conf).getString("mimetype")
     val request = client(objectPath).

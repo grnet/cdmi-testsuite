@@ -17,6 +17,8 @@
 
 package gr.grnet.cdmi.client.business
 
+import java.util.UUID
+
 import com.squareup.okhttp.{MediaType, Response}
 import com.typesafe.config.Config
 import gr.grnet.cdmi.client.conf.TestConf
@@ -25,6 +27,10 @@ import gr.grnet.cdmi.client.conf.TestConf
  *
  */
 abstract class TestCaseSkeleton(val fatalOnError: Boolean) extends TestCase {
+  val randomFolder   = UUID.randomUUID().toString + "/cdmi/"
+  val randomSuffix01 = UUID.randomUUID().toString
+  val randomSuffix02 = UUID.randomUUID().toString
+
   def checkNot500(response: Response): Unit = {
     val code = response.code()
     val message = response.message()
@@ -91,6 +97,9 @@ abstract class TestCaseSkeleton(val fatalOnError: Boolean) extends TestCase {
 
     objectPathPrefix
   }
+
+  def getRandomTestObjectPath01(conf: TestConf): String = getObjectPathPrefix(conf) + randomFolder + randomSuffix01
+  def getRandomTestObjectPath02(conf: TestConf): String = getObjectPathPrefix(conf) + randomFolder + randomSuffix02
 
   def getJsonBody(conf: TestConf): Config = {
     val path = "json-body"
