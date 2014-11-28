@@ -75,5 +75,16 @@ class DataObjectsCDMI extends TestCaseSkeleton(false) {
     checkResponse(response, client, true, Some(Client.Application_Cdmi_Object))
   }
 
-  def steps: List[TestStep] = List(step01, step01_1, step01_2, step01_3)
+  val step01_4_Name = s"DELETE CDMI"
+  val step01_4 = TestStep(step01_4_Name) { (client, conf) ⇒
+    val objectPath = getRandomTestObjectPath01(conf)
+    val request = client(objectPath).
+      applyHeaders(conf.`http-headers`).
+      delete()
+
+    val response = client.execute(request)
+    checkResponse(response, client, true, None)
+  }
+
+  def steps: List[TestStep] = List(step01, step01_1, step01_2, step01_3, step01_4)
 }
