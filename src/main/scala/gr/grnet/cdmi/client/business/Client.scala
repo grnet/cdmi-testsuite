@@ -37,7 +37,7 @@ case class Client(fullConf: FullConf, ok: OkHttpClient) {
       this
     }
 
-    def noHeader(name: String): this.type = {
+    def clearHeader(name: String): this.type = {
       okBuilder.removeHeader(name)
       this
     }

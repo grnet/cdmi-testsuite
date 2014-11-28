@@ -21,7 +21,6 @@ import java.util.UUID
 
 import com.typesafe.config.ConfigRenderOptions
 import gr.grnet.cdmi.client.business.{Client, TestCaseSkeleton, TestStep}
-import gr.grnet.cdmi.client.conf.Header
 
 /**
  *
@@ -92,7 +91,7 @@ class DataObjects extends TestCaseSkeleton(false) {
     val request = client(objectPath).
       contentType(mimetype).
       applyHeaders(headers).
-      noHeader(Client.X_CDMI_Specification_Version). // spec version must not be present for non-CDMI call
+      clearHeader(Client.X_CDMI_Specification_Version). // spec version must not be present for non-CDMI call
       contentType(mimetype).
       put(text)
 
@@ -108,6 +107,7 @@ class DataObjects extends TestCaseSkeleton(false) {
     val request = client(objectPath).
       acceptAny().
       applyHeaders(conf.`http-headers`).
+      clearHeader(Client.X_CDMI_Specification_Version). // spec version must not be present for non-CDMI call
       get()
 
     val response = client.execute(request)
@@ -121,6 +121,7 @@ class DataObjects extends TestCaseSkeleton(false) {
     val mimetype   = getJsonBody(conf).getString("mimetype")
     val request = client(objectPath).
       applyHeaders(conf.`http-headers`).
+      clearHeader(Client.X_CDMI_Specification_Version). // spec version must not be present for non-CDMI call
       get()
 
     val response = client.execute(request)
