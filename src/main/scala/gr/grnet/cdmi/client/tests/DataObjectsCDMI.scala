@@ -32,8 +32,8 @@ class DataObjectsCDMI extends TestCaseSkeleton(false) {
     val json       = jsonBody.root().render(ConfigRenderOptions.concise().setFormatted(true))
 
     val request = client(objectPath).
-      contentTypeCdmiObject().
       applyHeaders(conf.`http-headers`).
+      contentTypeCdmiObject().
       put(json)
 
     val response = client.execute(request)
@@ -44,8 +44,8 @@ class DataObjectsCDMI extends TestCaseSkeleton(false) {
   val step01_1 = TestStep(step01_1_Name) { (client, conf) ⇒
     val objectPath = getRandomTestObjectPath01(conf)
     val request = client(objectPath).
-      acceptCdmiObject().
       applyHeaders(conf.`http-headers`).
+      acceptCdmiObject().
       get()
 
     val response = client.execute(request)
@@ -56,8 +56,8 @@ class DataObjectsCDMI extends TestCaseSkeleton(false) {
   val step01_2 = TestStep(step01_2_Name) { (client, conf) ⇒
     val objectPath = getRandomTestObjectPath01(conf)
     val request = client(objectPath).
-      acceptAny().
       applyHeaders(conf.`http-headers`).
+      acceptAny().
       get()
 
     val response = client.execute(request)

@@ -31,7 +31,6 @@ class DataObjectsNonCDMI extends TestCaseSkeleton(false) {
 
     val headers = conf.`http-headers`
     val request = client(objectPath).
-      contentType(mimetype).
       applyHeaders(headers).
       clearHeader(Client.X_CDMI_Specification_Version). // spec version must not be present for non-CDMI call
       contentType(mimetype).
@@ -47,9 +46,9 @@ class DataObjectsNonCDMI extends TestCaseSkeleton(false) {
     val text       = getJsonBody(conf).getString("value")
     val mimetype   = getJsonBody(conf).getString("mimetype")
     val request = client(objectPath).
-      acceptAny().
       applyHeaders(conf.`http-headers`).
       clearHeader(Client.X_CDMI_Specification_Version). // spec version must not be present for non-CDMI call
+      acceptAny().
       get()
 
     val response = client.execute(request)
