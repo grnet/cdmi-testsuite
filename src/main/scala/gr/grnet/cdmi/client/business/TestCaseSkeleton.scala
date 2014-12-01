@@ -20,7 +20,7 @@ package gr.grnet.cdmi.client.business
 import java.util.UUID
 
 import com.squareup.okhttp.{MediaType, Response}
-import com.typesafe.config.Config
+import com.typesafe.config.{Config, ConfigFactory}
 import gr.grnet.cdmi.client.conf.TestConf
 
 /**
@@ -100,6 +100,26 @@ abstract class TestCaseSkeleton(val fatalOnError: Boolean) extends TestCase {
   )(extraBodyCheck: (String) ⇒ Unit): Unit = {
     val body = checkResponse(response, client, checkSpecHeader, checkContentTypeOpt = checkContentTypeOpt)
     extraBodyCheck(body)
+  }
+
+  def checkCdmiContainerResponseFields(bodyString: String): Unit = {
+    val bodyConfig = ConfigFactory.parseString(bodyString)
+
+    // Check mandatory fields in the JSON response
+    // CDMI/1.0.2 Section 9.2.7 Table 35
+    assertJsonPathAndValue(bodyConfig, "objectType", Client.Application_Cdmi_Container)
+    assertJsonPaths(bodyConfig,
+      "objectID",
+      "objectName",
+      "parentURI",
+      "parentID",
+      "domainURI",
+      "capabilitiesURI",
+      "completionStatus",
+      "metadata",
+      "childrenrange",
+      "children"
+    )
   }
 
   def getObjectPathPrefix(conf: TestConf): String = {
