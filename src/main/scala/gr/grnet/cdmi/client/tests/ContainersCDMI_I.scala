@@ -19,9 +19,6 @@ package gr.grnet.cdmi.client.tests
 
 import gr.grnet.cdmi.client.business.{Client, TestCaseSkeleton, TestStep}
 
-/**
- *
- */
 class ContainersCDMI_I extends TestCaseSkeleton(false) {
 
   val step01Name = s"PUT CDMI w/ '${Client.Content_Type}: ${Client.Application_Cdmi_Container}'"

@@ -31,7 +31,8 @@ abstract class TestCaseSkeleton(val fatalOnError: Boolean) extends TestCase {
   val randomObjectSuffix01 = UUID.randomUUID().toString
   val randomObjectSuffix02 = UUID.randomUUID().toString
   val randomContainerSuffix01 = UUID.randomUUID().toString + "/"
-  val randomContainerSuffix02 = UUID.randomUUID().toString + "/"
+  val randomContainerSuffix02 = UUID.randomUUID().toString + "/" + UUID.randomUUID().toString + "/" // nested container
+  val randomContainerSuffix03 = UUID.randomUUID().toString + "/"
 
   def assertJsonPath(config: Config, path: String): Unit =
     assert(config.hasPath(path), s"'$path' exists in the returned JSON")
@@ -149,6 +150,7 @@ abstract class TestCaseSkeleton(val fatalOnError: Boolean) extends TestCase {
 
   def getRandomContainerPath01(conf: TestConf): String = getContainerPathPrefix(conf) + randomFolder + randomContainerSuffix01
   def getRandomContainerPath02(conf: TestConf): String = getContainerPathPrefix(conf) + randomFolder + randomContainerSuffix02
+  def getRandomContainerPath03(conf: TestConf): String = getContainerPathPrefix(conf) + randomFolder + randomContainerSuffix03
 
   def getJsonBody(conf: TestConf): Config = {
     val path = "json-body"

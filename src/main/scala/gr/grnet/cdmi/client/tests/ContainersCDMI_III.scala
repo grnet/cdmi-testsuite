@@ -19,16 +19,19 @@ package gr.grnet.cdmi.client.tests
 
 import gr.grnet.cdmi.client.business.{Client, TestCaseSkeleton, TestStep}
 
-/** Test nested containers */
-class ContainersCDMI_II extends TestCaseSkeleton(false) {
+/**
+ *
+ */
+class ContainersCDMI_III extends TestCaseSkeleton(false) {
 
-  val step01Name = s"PUT CDMI w/ '${Client.Content_Type}: ${Client.Application_Cdmi_Container}'"
+  val step01Name = s"PUT CDMI w/ '${Client.Content_Type}: ${Client.Application_Cdmi_Container}' and '${Client.Accept}: ${Client.Application_Cdmi_Container}'"
   val step01 = TestStep(step01Name) { (client, conf) ⇒
-    val containerPath = getRandomContainerPath02(conf)
+    val containerPath = getRandomContainerPath03(conf)
 
     val request = client(containerPath).
       applyHeaders(conf.`http-headers`).
       contentTypeCdmiContainer().
+      acceptCdmiContainer().
       put()
 
     val response = client.execute(request)
@@ -40,7 +43,7 @@ class ContainersCDMI_II extends TestCaseSkeleton(false) {
 
   val step02_1_Name = s"GET CDMI w/ '${Client.Accept}: ${Client.Application_Cdmi_Container}'"
   val step02_1 = TestStep(step02_1_Name) { (client, conf) ⇒
-    val containerPath = getRandomContainerPath02(conf)
+    val containerPath = getRandomContainerPath03(conf)
 
     val request = client(containerPath).
       applyHeaders(conf.`http-headers`).
@@ -53,7 +56,7 @@ class ContainersCDMI_II extends TestCaseSkeleton(false) {
 
   val step02_2_Name = s"GET CDMI w/o '${Client.Accept}'"
   val step02_2 = TestStep(step02_2_Name) { (client, conf) ⇒
-    val containerPath = getRandomContainerPath02(conf)
+    val containerPath = getRandomContainerPath03(conf)
 
     val request = client(containerPath).
       applyHeaders(conf.`http-headers`).
@@ -66,7 +69,7 @@ class ContainersCDMI_II extends TestCaseSkeleton(false) {
 
   val step02_3_Name = s"GET CDMI w/ '${Client.Accept}: */*'"
   val step02_3 = TestStep(step02_3_Name) { (client, conf) ⇒
-    val containerPath = getRandomContainerPath02(conf)
+    val containerPath = getRandomContainerPath03(conf)
 
     val request = client(containerPath).
       applyHeaders(conf.`http-headers`).
@@ -79,7 +82,7 @@ class ContainersCDMI_II extends TestCaseSkeleton(false) {
 
   val step03Name = s"DELETE CDMI"
   val step03 = TestStep(step03Name) { (client, conf) ⇒
-    val containerPath = getRandomContainerPath02(conf)
+    val containerPath = getRandomContainerPath03(conf)
 
     val request = client(containerPath).
       applyHeaders(conf.`http-headers`).
