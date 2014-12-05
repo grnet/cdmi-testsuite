@@ -1,11 +1,16 @@
 ## Intro
 
-This is a CDMI test suite, currently targeting [GRNET's CDMI implementation](https://github.com/grnet/pithos-j) but which can be generalized:
+This is a CDMI test suite. The initial use-case was testing [GRNET's CDMI implementation](https://github.com/grnet/snf-cdmi),
+which in turn is based on a generic [CDMI skeleton server](https://github.com/grnet/cdmi-spec).
 
-* To support any CDMI implementation
-* To support other testing needs
+The test suite is [configuration-based](https://github.com/grnet/cdmi-testsuite/blob/master/src/main/resources/reference.conf)
+and can be extended to support:
 
-The test suite is meant to be configurable. See [reference.conf](https://github.com/grnet/cdmi-testsuite/blob/master/src/main/resources/reference.conf)
+* Any CDMI implementation
+* Other testing needs
+
+For example, the configuration to run against GRNET's Pithos backend storage service is
+[straightforward to define](https://github.com/grnet/cdmi-testsuite/blob/master/src/main/resources/pithosj-reference.conf) by manipulating the relevant HTTP headers.
 
 A successful run looks like this:
 
@@ -49,6 +54,13 @@ A successful run looks like this:
   OK [GET CDMI w/ 'Accept: */*']
   OK [DELETE CDMI]
 -OK ContainersCDMI_I [gr.grnet.cdmi.client.tests.ContainersCDMI_I]
++ContainersCDMI_II [gr.grnet.cdmi.client.tests.ContainersCDMI_II]
+  OK [PUT CDMI w/ 'Content-Type: application/cdmi-container' and 'Accept: application/cdmi-container']
+  OK [GET CDMI w/ 'Accept: application/cdmi-container']
+  OK [GET CDMI w/o 'Accept']
+  OK [GET CDMI w/ 'Accept: */*']
+  OK [DELETE CDMI]
+-OK ContainersCDMI_II [gr.grnet.cdmi.client.tests.ContainersCDMI_II]
 ```
 
 ## Usage
